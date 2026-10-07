@@ -14,6 +14,8 @@ export const metadata: Metadata = {
   // Home screen install on iOS: full screen, no Safari chrome, status bar drawn over the app.
   appleWebApp: { capable: true, title: "XBookmarkVault", statusBarStyle: "black-translucent" },
   formatDetection: { telephone: false, email: false, address: false },
+  // Older iOS versions only honor the Apple-prefixed tag for full-screen home screen apps.
+  other: { "apple-mobile-web-app-capable": "yes" },
 };
 
 export const viewport: Viewport = {
