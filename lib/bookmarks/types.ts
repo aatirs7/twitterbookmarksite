@@ -63,6 +63,7 @@ export interface Facet {
   value: string;
   label: string;
   count: number;
+  color?: string | null;
 }
 
 export interface SearchResponse {

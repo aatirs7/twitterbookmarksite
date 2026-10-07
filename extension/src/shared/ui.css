@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+/* Dark by default; light follows prefers-color-scheme. Only the design tokens below, no extreme neutrals. */
+:root {
+  color-scheme: dark;
+  --t-bg: #0f1115;
+  --t-surface: #171a21;
+  --t-raised: #1e222b;
+  --t-border: #2a2f3a;
+  --t-text: #e8eaed;
+  --t-muted: #9aa0aa;
+  --t-accent: #7c9cff;
+  --t-on-accent: #0f1115;
+  --t-ok: #6fcf97;
+  --t-warn: #e8b86b;
+  --t-danger: #f08080;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    --t-bg: #f6f5f2;
+    --t-surface: #fbfaf8;
+    --t-raised: #efede8;
+    --t-border: #dcd8d0;
+    --t-text: #1a1c20;
+    --t-muted: #5f6670;
+    --t-accent: #4f6fd9;
+    --t-on-accent: #fbfaf8;
+    --t-ok: #2e8b57;
+    --t-warn: #a8701c;
+    --t-danger: #c0453f;
+  }
+}
+
+@theme {
+  /* Drop Tailwind's default palette so default colors cannot sneak in. */
+  --color-*: initial;
+  --color-bg: var(--t-bg);
+  --color-surface: var(--t-surface);
+  --color-raised: var(--t-raised);
+  --color-line: var(--t-border);
+  --color-fg: var(--t-text);
+  --color-muted: var(--t-muted);
+  --color-accent: var(--t-accent);
+  --color-on-accent: var(--t-on-accent);
+  --color-ok: var(--t-ok);
+  --color-warn: var(--t-warn);
+  --color-danger: var(--t-danger);
+  --font-sans: Inter, ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
+}
+
+html,
+body {
+  background: var(--t-bg);
+  color: var(--t-text);
+  font-family: var(--font-sans);
+}
+
+body {
+  margin: 0;
+  text-align: center;
+}
+
+button:focus-visible,
+input:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--t-accent);
+  outline-offset: 2px;
+}

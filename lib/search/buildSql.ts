@@ -191,7 +191,7 @@ async function loadFacets(
 ): Promise<SearchResponse["facets"]> {
   const [tagRes, authorRes, domainRes] = await Promise.all([
     db.execute(sql`
-      select tg.slug as value, tg.name as label, count(*)::int as count
+      select tg.slug as value, tg.name as label, max(tg.color) as color, count(*)::int as count
       from bookmarks b join tweets t on t.id = b.tweet_id
       join bookmark_tags bt on bt.user_id = b.user_id and bt.tweet_id = b.tweet_id
       join tags tg on tg.id = bt.tag_id

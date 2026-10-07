@@ -1,26 +1,124 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains);
+  --font-heading: var(--font-inter);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-surface: var(--surface);
+  --color-raised: var(--raised);
+  --color-brand: var(--brand);
+  --color-mark: var(--mark);
+  /* Shadows tinted with the background ink instead of pure black. */
+  --shadow-xs: 0 1px 2px 0 rgb(15 17 21 / 0.06);
+  --shadow-sm: 0 1px 3px 0 rgb(15 17 21 / 0.1), 0 1px 2px -1px rgb(15 17 21 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(15 17 21 / 0.12), 0 2px 4px -2px rgb(15 17 21 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(15 17 21 / 0.14), 0 4px 6px -4px rgb(15 17 21 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(15 17 21 / 0.16), 0 8px 10px -6px rgb(15 17 21 / 0.1);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Light theme (spec 9.1). No pure white or black anywhere. */
+:root {
+  --radius: 0.75rem;
+  --background: #f6f5f2;
+  --surface: #fbfaf8;
+  --raised: #efede8;
+  --foreground: #1a1c20;
+  --muted-foreground: #5f6670;
+  --border: #e2dfd8;
+  --input: #e2dfd8;
+  --brand: #4f6fe0;
+  --mark: rgba(79, 111, 224, 0.18);
+
+  --card: var(--surface);
+  --card-foreground: var(--foreground);
+  --popover: var(--surface);
+  --popover-foreground: var(--foreground);
+  --primary: var(--brand);
+  --primary-foreground: #f6f5f2;
+  --secondary: var(--raised);
+  --secondary-foreground: var(--foreground);
+  --muted: var(--raised);
+  --accent: var(--raised);
+  --accent-foreground: var(--foreground);
+  --destructive: #c4524a;
+  --ring: var(--brand);
+}
+
+/* Dark theme (default). */
+.dark {
+  --background: #0f1115;
+  --surface: #171a21;
+  --raised: #1e222b;
+  --foreground: #e8eaed;
+  --muted-foreground: #9aa0aa;
+  --border: #2a2f3a;
+  --input: #2a2f3a;
+  --brand: #7c9cff;
+  --mark: rgba(124, 156, 255, 0.28);
+
+  --primary-foreground: #0f1115;
+  --destructive: #e07a72;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    --tw-ring-offset-color: var(--background);
+  }
+  html {
+    @apply font-sans;
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+  mark {
+    background: var(--mark);
+    color: inherit;
+    border-radius: 0.2rem;
+    padding: 0 0.1rem;
+  }
+  ::selection {
+    background: var(--mark);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@utility masonry {
+  column-gap: 1rem;
+  & > * {
+    break-inside: avoid;
+    margin-bottom: 1rem;
+  }
 }
