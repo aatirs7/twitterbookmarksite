@@ -1,0 +1,335 @@
+{
+  "data": {
+    "bookmark_timeline_v2": {
+      "timeline": {
+        "instructions": [
+          {
+            "type": "TimelineAddEntries",
+            "entries": [
+              {
+                "entryId": "tweet-1800000000000000001",
+                "sortIndex": "1900000000000000009",
+                "content": {
+                  "entryType": "TimelineTimelineItem",
+                  "itemContent": {
+                    "itemType": "TimelineTweet",
+                    "tweet_results": {
+                      "result": {
+                        "__typename": "Tweet",
+                        "rest_id": "1800000000000000001",
+                        "core": {
+                          "user_results": {
+                            "result": {
+                              "__typename": "User",
+                              "rest_id": "100",
+                              "is_blue_verified": true,
+                              "core": { "screen_name": "PlainAuthor", "name": "Plain Author" },
+                              "avatar": { "image_url": "https://pbs.twimg.com/profile_images/1/a_normal.jpg" },
+                              "legacy": {}
+                            }
+                          }
+                        },
+                        "views": { "count": "12345", "state": "EnabledWithCount" },
+                        "legacy": {
+                          "id_str": "1800000000000000001",
+                          "full_text": "Plain tweet about Claude Code &amp; agents &lt;3",
+                          "created_at": "Wed Oct 10 20:19:24 +0000 2018",
+                          "lang": "en",
+                          "conversation_id_str": "1800000000000000001",
+                          "favorite_count": 42,
+                          "retweet_count": 5,
+                          "reply_count": 3,
+                          "quote_count": 1,
+                          "entities": { "urls": [] }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "entryId": "tweet-1800000000000000002",
+                "sortIndex": "1900000000000000008",
+                "content": {
+                  "entryType": "TimelineTimelineItem",
+                  "itemContent": {
+                    "itemType": "TimelineTweet",
+                    "tweet_results": {
+                      "result": {
+                        "__typename": "Tweet",
+                        "rest_id": "1800000000000000002",
+                        "core": {
+                          "user_results": {
+                            "result": {
+                              "__typename": "User",
+                              "rest_id": "101",
+                              "is_blue_verified": false,
+                              "legacy": {
+                                "screen_name": "LegacyLong",
+                                "name": "Legacy Long",
+                                "profile_image_url_https": "https://pbs.twimg.com/profile_images/2/b_normal.png"
+                              }
+                            }
+                          }
+                        },
+                        "note_tweet": {
+                          "is_expandable": true,
+                          "note_tweet_results": {
+                            "result": {
+                              "text": "This is a very long note tweet that keeps going well past the 280 character limit. Read more at https://t.co/note1 because it explains everything in detail.",
+                              "entity_set": {
+                                "urls": [
+                                  { "url": "https://t.co/note1", "expanded_url": "https://www.example.com/long-read", "display_url": "example.com/long-read" }
+                                ]
+                              }
+                            }
+                          }
+                        },
+                        "legacy": {
+                          "id_str": "1800000000000000002",
+                          "full_text": "This is a very long note tweet that keeps going well past the... https://t.co/trunc",
+                          "created_at": "Thu Jan 04 09:00:00 +0000 2024",
+                          "lang": "en",
+                          "favorite_count": 10,
+                          "entities": {
+                            "urls": [
+                              { "url": "https://t.co/trunc", "expanded_url": "https://x.com/LegacyLong/status/1800000000000000002", "display_url": "x.com/LegacyLong/..." }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "entryId": "tweet-1800000000000000003",
+                "sortIndex": "1900000000000000007",
+                "content": {
+                  "entryType": "TimelineTimelineItem",
+                  "itemContent": {
+                    "itemType": "TimelineTweet",
+                    "tweet_results": {
+                      "result": {
+                        "__typename": "Tweet",
+                        "rest_id": "1800000000000000003",
+                        "core": {
+                          "user_results": {
+                            "result": {
+                              "rest_id": "102",
+                              "core": { "screen_name": "Quoter", "name": "Quoter" },
+                              "legacy": {}
+                            }
+                          }
+                        },
+                        "quoted_status_result": {
+                          "result": {
+                            "__typename": "Tweet",
+                            "rest_id": "1700000000000000001",
+                            "core": {
+                              "user_results": {
+                                "result": { "rest_id": "103", "core": { "screen_name": "Original", "name": "Original Poster" }, "legacy": {} }
+                              }
+                            },
+                            "legacy": {
+                              "id_str": "1700000000000000001",
+                              "full_text": "The original quoted thought",
+                              "created_at": "Mon Jan 01 00:00:00 +0000 2024",
+                              "favorite_count": 1000,
+                              "entities": { "urls": [] }
+                            }
+                          }
+                        },
+                        "legacy": {
+                          "id_str": "1800000000000000003",
+                          "full_text": "Hot take on this https://t.co/quote1",
+                          "created_at": "Tue Jan 02 00:00:00 +0000 2024",
+                          "quoted_status_id_str": "1700000000000000001",
+                          "is_quote_status": true,
+                          "quoted_status_permalink": { "url": "https://t.co/quote1", "expanded": "https://twitter.com/Original/status/1700000000000000001" },
+                          "entities": {
+                            "urls": [
+                              { "url": "https://t.co/quote1", "expanded_url": "https://twitter.com/Original/status/1700000000000000001" }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "entryId": "tweet-1800000000000000004",
+                "sortIndex": "1900000000000000006",
+                "content": {
+                  "entryType": "TimelineTimelineItem",
+                  "itemContent": {
+                    "itemType": "TimelineTweet",
+                    "tweet_results": {
+                      "result": {
+                        "__typename": "Tweet",
+                        "rest_id": "1800000000000000004",
+                        "core": { "user_results": { "result": { "rest_id": "104", "core": { "screen_name": "Photog", "name": "Photographer" }, "legacy": {} } } },
+                        "legacy": {
+                          "id_str": "1800000000000000004",
+                          "full_text": "Two shots from the studio https://t.co/photos",
+                          "created_at": "Wed Jan 03 00:00:00 +0000 2024",
+                          "entities": {
+                            "urls": [],
+                            "media": [{ "url": "https://t.co/photos", "media_url_https": "https://pbs.twimg.com/media/p1.jpg", "type": "photo" }]
+                          },
+                          "extended_entities": {
+                            "media": [
+                              { "url": "https://t.co/photos", "media_url_https": "https://pbs.twimg.com/media/p1.jpg", "type": "photo", "original_info": { "width": 1200, "height": 800 }, "ext_alt_text": "A desk" },
+                              { "url": "https://t.co/photos", "media_url_https": "https://pbs.twimg.com/media/p2.jpg", "type": "photo", "original_info": { "width": 800, "height": 1200 } }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "entryId": "tweet-1800000000000000005",
+                "sortIndex": "1900000000000000005",
+                "content": {
+                  "entryType": "TimelineTimelineItem",
+                  "itemContent": {
+                    "itemType": "TimelineTweet",
+                    "tweet_results": {
+                      "result": {
+                        "__typename": "Tweet",
+                        "rest_id": "1800000000000000005",
+                        "core": { "user_results": { "result": { "rest_id": "105", "core": { "screen_name": "Videographer", "name": "Video Person" }, "legacy": {} } } },
+                        "legacy": {
+                          "id_str": "1800000000000000005",
+                          "full_text": "Watch this demo https://t.co/vid",
+                          "created_at": "Thu Jan 04 00:00:00 +0000 2024",
+                          "entities": { "urls": [] },
+                          "extended_entities": {
+                            "media": [
+                              {
+                                "url": "https://t.co/vid",
+                                "media_url_https": "https://pbs.twimg.com/ext_tw_video_thumb/v.jpg",
+                                "type": "video",
+                                "original_info": { "width": 1920, "height": 1080 },
+                                "video_info": {
+                                  "duration_millis": 30500,
+                                  "variants": [
+                                    { "content_type": "application/x-mpegURL", "url": "https://video.twimg.com/v.m3u8" },
+                                    { "content_type": "video/mp4", "bitrate": 832000, "url": "https://video.twimg.com/v_low.mp4" },
+                                    { "content_type": "video/mp4", "bitrate": 2176000, "url": "https://video.twimg.com/v_high.mp4" }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "entryId": "tweet-1800000000000000006",
+                "sortIndex": "1900000000000000004",
+                "content": {
+                  "entryType": "TimelineTimelineItem",
+                  "itemContent": {
+                    "itemType": "TimelineTweet",
+                    "tweet_results": {
+                      "result": {
+                        "__typename": "Tweet",
+                        "rest_id": "1800000000000000006",
+                        "core": { "user_results": { "result": { "rest_id": "106", "core": { "screen_name": "Linker", "name": "Link Sharer" }, "legacy": {} } } },
+                        "card": {
+                          "rest_id": "https://t.co/card1",
+                          "legacy": {
+                            "name": "summary_large_image",
+                            "url": "https://t.co/card1",
+                            "binding_values": [
+                              { "key": "title", "value": { "type": "STRING", "string_value": "Great Repo" } },
+                              { "key": "description", "value": { "type": "STRING", "string_value": "A repo that does things" } },
+                              { "key": "vanity_url", "value": { "type": "STRING", "string_value": "github.com" } },
+                              { "key": "card_url", "value": { "type": "STRING", "string_value": "https://t.co/card1" } },
+                              { "key": "thumbnail_image_large", "value": { "type": "IMAGE", "image_value": { "url": "https://pbs.twimg.com/card_img/1.jpg" } } }
+                            ]
+                          }
+                        },
+                        "legacy": {
+                          "id_str": "1800000000000000006",
+                          "full_text": "Check out https://t.co/card1",
+                          "created_at": "Fri Jan 05 00:00:00 +0000 2024",
+                          "entities": {
+                            "urls": [
+                              { "url": "https://t.co/card1", "expanded_url": "https://github.com/acme/great-repo", "display_url": "github.com/acme/great-repo" }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "entryId": "tweet-1800000000000000007",
+                "sortIndex": "1900000000000000003",
+                "content": {
+                  "entryType": "TimelineTimelineItem",
+                  "itemContent": {
+                    "itemType": "TimelineTweet",
+                    "tweet_results": {
+                      "result": {
+                        "__typename": "TweetTombstone",
+                        "tombstone": { "__typename": "TextTombstone", "text": { "text": "This post is unavailable." } }
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "entryId": "tweet-1800000000000000008",
+                "sortIndex": "1900000000000000002",
+                "content": {
+                  "entryType": "TimelineTimelineItem",
+                  "itemContent": {
+                    "itemType": "TimelineTweet",
+                    "tweet_results": {
+                      "result": {
+                        "__typename": "TweetWithVisibilityResults",
+                        "tweet": {
+                          "rest_id": "1800000000000000008",
+                          "core": { "user_results": { "result": { "rest_id": "107", "core": { "screen_name": "Limited", "name": "Limited Reach" }, "legacy": {} } } },
+                          "article": { "article_results": { "result": { "title": "My Long Article" } } },
+                          "legacy": {
+                            "id_str": "1800000000000000008",
+                            "full_text": "Visibility wrapped post",
+                            "created_at": "Sat Jan 06 00:00:00 +0000 2024",
+                            "in_reply_to_status_id_str": "1799999999999999999",
+                            "in_reply_to_screen_name": "Someone",
+                            "entities": { "urls": [] }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "entryId": "cursor-bottom-1900000000000000001",
+                "sortIndex": "1900000000000000001",
+                "content": { "entryType": "TimelineTimelineCursor", "cursorType": "Bottom", "value": "CURSOR_BOTTOM_ABC" }
+              },
+              {
+                "entryId": "cursor-top-1900000000000000010",
+                "sortIndex": "1900000000000000010",
+                "content": { "entryType": "TimelineTimelineCursor", "cursorType": "Top", "value": "CURSOR_TOP_XYZ" }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
