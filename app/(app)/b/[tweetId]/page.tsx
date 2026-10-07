@@ -35,14 +35,14 @@ export default async function BookmarkDetailPage({ params }: PageProps<"/b/[twee
 
   return (
     <div className="flex flex-col items-center gap-10">
-      <article className="flex w-full max-w-2xl flex-col items-center gap-5 rounded-3xl border border-border bg-surface p-6 text-center sm:p-8">
+      <article className="etched rise flex w-full max-w-2xl flex-col items-center gap-5 rounded-2xl p-6 text-center sm:p-10">
         <AuthorLine tweet={tweet} />
         {tweet.inReplyToHandle && <div className="text-xs text-muted-foreground">Replying to @{tweet.inReplyToHandle}</div>}
-        {tweet.isArticle && tweet.articleTitle && <h1 className="text-xl font-semibold">{tweet.articleTitle}</h1>}
+        {tweet.isArticle && tweet.articleTitle && <h1 className="font-serif text-4xl leading-tight tracking-[-0.02em]">{tweet.articleTitle}</h1>}
         {tweet.isTombstone && !tweet.text ? (
           <p className="text-muted-foreground">This post is no longer available on X.</p>
         ) : (
-          <TweetText text={tweet.text} className="text-lg" />
+          <TweetText text={tweet.text} className="text-[17px] leading-[1.65]" />
         )}
         <div className="w-full">
           <MediaGrid media={tweet.media} full />
@@ -62,18 +62,19 @@ export default async function BookmarkDetailPage({ params }: PageProps<"/b/[twee
         )}
 
         {!tweet.isTombstone && (
-          <div className="flex flex-wrap justify-center gap-x-5 gap-y-1 text-sm text-muted-foreground">
+          <div className="flex w-full flex-wrap items-stretch justify-center gap-y-2 border-y border-hairline py-3">
             {metrics
               .filter(([, v]) => v !== null)
               .map(([label, v]) => (
-                <span key={label}>
-                  <span className="font-medium text-foreground">{compactNumber(v)}</span> {label}
+                <span key={label} className="flex flex-col items-center gap-0.5 px-4">
+                  <span className="tabular text-base font-semibold">{compactNumber(v)}</span>
+                  <span className="label-mono">{label}</span>
                 </span>
               ))}
           </div>
         )}
 
-        <div className="flex flex-col items-center gap-1 text-xs text-muted-foreground">
+        <div className="label-mono flex flex-col items-center gap-1.5">
           {tweet.createdAt && <span>Posted {fullDate(tweet.createdAt)}</span>}
           <span>Bookmarked around {fullDate(item.bookmarkedAt)}</span>
           {item.removedAt && <span>Removed from X bookmarks {fullDate(item.removedAt)}</span>}
@@ -82,19 +83,23 @@ export default async function BookmarkDetailPage({ params }: PageProps<"/b/[twee
           </a>
         </div>
 
-        {item.aiSummary && <p className="max-w-lg text-sm italic text-muted-foreground">{item.aiSummary}</p>}
+        {item.aiSummary && <p className="max-w-lg font-serif text-xl leading-snug text-muted-foreground italic">{item.aiSummary}</p>}
 
         <DetailEditor item={item} allTags={allTags} />
       </article>
 
       {related.length > 0 && (
         <section className="flex w-full flex-col items-center gap-4">
-          <h2 className="text-lg font-semibold">Related</h2>
+          <div className="flex items-center gap-2">
+            <span className="label-mono text-brand">Related</span>
+            <span className="h-px w-6 bg-hairline-strong" />
+            <span className="label-mono">{related.length} close by</span>
+          </div>
           <RelatedGrid items={related} allTags={allTags} />
         </section>
       )}
 
-      <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">
+      <Link href="/" className="label-mono hover:text-foreground">
         Back to library
       </Link>
     </div>

@@ -26,6 +26,8 @@ interface Props {
   onDialogChange?: (d: CardDialog) => void;
   onUpdate: (item: BookmarkItem) => void;
   onFocus?: () => void;
+  /** Position in the list, shown as a catalog number. */
+  index?: number;
 }
 
 function IconAction({ label, onClick, href, active, children }: {
@@ -35,15 +37,18 @@ function IconAction({ label, onClick, href, active, children }: {
   active?: boolean;
   children: React.ReactNode;
 }) {
-  const cls = cn("text-muted-foreground hover:text-foreground", active && "text-brand hover:text-brand");
+  const cls = cn(
+    "inline-flex h-9 flex-1 items-center justify-center text-faint transition-colors hover:bg-raised/70 hover:text-foreground",
+    active && "text-brand hover:text-brand",
+  );
   return (
     <Tooltip>
       <TooltipTrigger
         render={
           href ? (
-            <a href={href} target="_blank" rel="noreferrer noopener" aria-label={label} className={cn("inline-flex size-8 items-center justify-center rounded-lg hover:bg-raised", cls)} />
+            <a href={href} target="_blank" rel="noreferrer noopener" aria-label={label} className={cls} />
           ) : (
-            <Button variant="ghost" size="icon" aria-label={label} onClick={onClick} className={cls} />
+            <button type="button" aria-label={label} onClick={onClick} className={cls} />
           )
         }
       >
@@ -72,7 +77,7 @@ export async function copyLink(item: BookmarkItem) {
 }
 
 export const BookmarkCard = forwardRef<HTMLElement, Props>(function BookmarkCard(
-  { item, allTags, focused, dialog: dialogProp, onDialogChange, onUpdate, onFocus },
+  { item, allTags, focused, index, dialog: dialogProp, onDialogChange, onUpdate, onFocus },
   ref,
 ) {
   const [localDialog, setLocalDialog] = useState<CardDialog>(null);
@@ -89,94 +94,107 @@ export const BookmarkCard = forwardRef<HTMLElement, Props>(function BookmarkCard
       onFocus={onFocus}
       data-tweet-id={item.tweetId}
       className={cn(
-        "group flex flex-col items-center gap-3 rounded-2xl border border-border bg-surface p-4 text-center outline-none transition-shadow",
-        "focus-visible:ring-2 focus-visible:ring-ring/60",
-        focused && "ring-2 ring-ring/60",
-        item.removedAt && "opacity-75",
+        "etched group relative flex flex-col overflow-hidden rounded-2xl text-center outline-none transition-[border-color,transform] duration-200",
+        "hover:border-hairline-strong focus-visible:border-brand/60",
+        focused && "border-brand/60",
+        item.removedAt && "opacity-70",
       )}
     >
-      <AuthorLine tweet={tweet} />
-
-      {item.pinned && (
-        <span className="inline-flex items-center gap-1 text-xs text-brand">
-          <Pin className="size-3" /> Pinned
+      {index !== undefined && (
+        <span className="label-mono absolute top-3 left-3.5 tabular opacity-70">{String(index + 1).padStart(3, "0")}</span>
+      )}
+      {(item.pinned || item.removedAt) && (
+        <span className={cn("label-mono absolute top-3 right-3.5", item.pinned ? "text-brand" : "")}>
+          {item.pinned ? "Pinned" : "Removed"}
         </span>
       )}
 
-      {tweet.isArticle && tweet.articleTitle && <div className="text-base font-semibold">{tweet.articleTitle}</div>}
+      <div className="flex flex-col items-center gap-3 px-5 pt-5 pb-4">
+        <AuthorLine tweet={tweet} />
 
-      {tweet.isTombstone && !tweet.text ? (
-        <div className="text-sm text-muted-foreground">This post is no longer available on X.</div>
-      ) : (
-        <div className="w-full">
-          <TweetText text={tweet.text} headline={item.headline} clamp={!expanded} />
-          {long && (
-            <button type="button" onClick={() => setExpanded((v) => !v)} className="mt-1 text-sm text-brand hover:underline">
-              {expanded ? "Less" : "More"}
-            </button>
-          )}
-        </div>
-      )}
+        {tweet.isArticle && tweet.articleTitle && (
+          <div className="font-serif text-[22px] leading-tight tracking-[-0.01em]">{tweet.articleTitle}</div>
+        )}
 
-      {tweet.media.length > 0 && (
-        <Link href={`/b/${item.tweetId}`} className="w-full" tabIndex={-1}>
-          <MediaGrid media={tweet.media} />
-        </Link>
-      )}
+        {tweet.isTombstone && !tweet.text ? (
+          <div className="label-mono py-2">No longer available on X</div>
+        ) : (
+          <div className="w-full">
+            <TweetText text={tweet.text} headline={item.headline} clamp={!expanded} className="text-[14.5px] leading-[1.6]" />
+            {long && (
+              <button type="button" onClick={() => setExpanded((v) => !v)} className="label-mono mt-2 text-brand hover:opacity-80">
+                {expanded ? "Show less" : "Read more"}
+              </button>
+            )}
+          </div>
+        )}
 
-      {tweet.links.map((l) => (
-        <div key={l.url} className="w-full">
-          <LinkCard link={l} />
-        </div>
-      ))}
+        {tweet.media.length > 0 && (
+          <Link href={`/b/${item.tweetId}`} className="w-full" tabIndex={-1}>
+            <MediaGrid media={tweet.media} />
+          </Link>
+        )}
 
-      {tweet.quoted && (
-        <div className="w-full">
-          <QuotedTweet tweet={tweet.quoted} />
-        </div>
-      )}
+        {tweet.links.filter((l) => l.title || l.imageUrl).map((l) => (
+          <div key={l.url} className="w-full">
+            <LinkCard link={l} />
+          </div>
+        ))}
 
-      {item.note && (
-        <div className="w-full rounded-xl bg-raised/60 px-3 py-2 text-sm">
-          <span className="text-muted-foreground">Note: </span>
-          {item.note}
-        </div>
-      )}
+        {tweet.quoted && (
+          <div className="w-full">
+            <QuotedTweet tweet={tweet.quoted} />
+          </div>
+        )}
 
-      {item.tags.length > 0 && (
-        <div className="flex flex-wrap justify-center gap-1.5">
-          {item.tags.map((t) => (
-            <TagChip key={t.slug} tag={t} href={`/?tags=${encodeURIComponent(t.slug)}`} />
-          ))}
-        </div>
-      )}
+        {item.note && (
+          <div className="w-full rounded-xl border border-dashed border-hairline-strong px-3 py-2 text-[13px]">
+            <div className="label-mono mb-1">Note</div>
+            {item.note}
+          </div>
+        )}
 
-      {item.aiSummary && (
-        <p className="max-h-0 overflow-hidden text-sm italic text-muted-foreground opacity-0 transition-all duration-200 group-hover:max-h-24 group-hover:opacity-100 group-focus-within:max-h-24 group-focus-within:opacity-100 group-focus:max-h-24 group-focus:opacity-100">
-          {item.aiSummary}
-        </p>
-      )}
+        {item.tags.length > 0 && (
+          <div className="flex flex-wrap justify-center gap-1">
+            {item.tags.map((t) => (
+              <TagChip key={t.slug} tag={t} href={`/?tags=${encodeURIComponent(t.slug)}`} />
+            ))}
+          </div>
+        )}
 
-      {item.removedAt && <div className="text-xs text-muted-foreground">Removed from X bookmarks</div>}
+        {item.aiSummary && (
+          <p className="max-h-0 overflow-hidden font-serif text-[15px] leading-snug text-muted-foreground italic opacity-0 transition-all duration-300 group-focus-within:max-h-24 group-focus-within:opacity-100 group-hover:max-h-24 group-hover:opacity-100">
+            {item.aiSummary}
+          </p>
+        )}
+      </div>
 
-      <footer className="flex items-center justify-center gap-0.5">
+      <footer className="mt-auto flex items-stretch border-t border-hairline">
         <IconAction label="Open on X (o)" href={tweetUrl(tweet.authorHandle, item.tweetId)}>
-          <ExternalLink className="size-4" />
+          <ExternalLink className="size-3.5" />
         </IconAction>
+        <span className="w-px bg-hairline" />
         <IconAction label={item.pinned ? "Unpin (p)" : "Pin (p)"} active={item.pinned} onClick={() => togglePin(item, onUpdate)}>
-          <Pin className="size-4" />
+          <Pin className="size-3.5" />
         </IconAction>
+        <span className="w-px bg-hairline" />
         <IconAction label="Note (n)" active={!!item.note} onClick={() => setDialog("note")}>
-          <StickyNote className="size-4" />
+          <StickyNote className="size-3.5" />
         </IconAction>
+        <span className="w-px bg-hairline" />
         <IconAction label="Edit tags (t)" onClick={() => setDialog("tags")}>
-          <TagIcon className="size-4" />
+          <TagIcon className="size-3.5" />
         </IconAction>
-        <IconAction label="Copy link" onClick={() => copyLink(item)}>
-          <Link2 className="size-4" />
+        <span className="w-px bg-hairline" />
+        <IconAction label="Copy link (c)" onClick={() => copyLink(item)}>
+          <Link2 className="size-3.5" />
         </IconAction>
-        <Link href={`/b/${item.tweetId}`} className="ml-1 rounded-lg px-2 py-1 text-xs text-muted-foreground hover:bg-raised hover:text-foreground">
-          Details
+        <span className="w-px bg-hairline" />
+        <Link
+          href={`/b/${item.tweetId}`}
+          className="label-mono inline-flex h-9 flex-1 items-center justify-center transition-colors hover:bg-raised/70 hover:text-foreground"
+        >
+          Open
         </Link>
       </footer>
 

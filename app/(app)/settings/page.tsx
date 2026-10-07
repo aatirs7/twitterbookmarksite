@@ -9,14 +9,18 @@ import { fullDate } from "@/lib/format";
 import { ensureSeedTags } from "@/lib/tags/seed";
 import { listUserTags } from "@/lib/tags/queries";
 import { cn } from "@/lib/utils";
+import { PageHeader } from "@/components/app/PageHeader";
 
 export const metadata = { title: "Settings | Trove" };
 
-function Section({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
+function Section({ index, title, description, children }: { index: string; title: string; description?: string; children: React.ReactNode }) {
   return (
-    <section className="flex w-full max-w-3xl flex-col items-center gap-4 rounded-3xl border border-border bg-surface p-6 text-center">
-      <div className="flex flex-col items-center gap-1">
-        <h2 className="text-lg font-semibold">{title}</h2>
+    <section className="etched flex w-full max-w-3xl flex-col items-center gap-5 rounded-2xl p-6 text-center sm:p-8">
+      <div className="flex flex-col items-center gap-2">
+        <span className="label-mono">
+          <span className="text-brand">{index}</span>
+        </span>
+        <h2 className="font-serif text-[30px] leading-none tracking-[-0.02em]">{title}</h2>
         {description && <p className="max-w-lg text-sm text-muted-foreground">{description}</p>}
       </div>
       {children}
@@ -46,19 +50,19 @@ export default async function SettingsPage() {
 
   return (
     <div className="flex flex-col items-center gap-8">
-      <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
+      <PageHeader index="04" label="Settings" title={<>The <span className="text-muted-foreground italic">controls</span></>} />
 
-      <Section title="Import tokens" description="The Trove Sync extension uses a token to send bookmarks here. Tokens are shown once.">
+      <Section index="4.1" title="Import tokens" description="The Trove Sync extension uses a token to send bookmarks here. Tokens are shown once.">
         <TokensSection
           tokens={tokens.map((t) => ({ ...t, createdAt: t.createdAt.toISOString(), lastUsedAt: t.lastUsedAt?.toISOString() ?? null }))}
         />
       </Section>
 
-      <Section title="Extension" description="Trove Sync reads your bookmarks through your logged-in X session and sends them here.">
+      <Section index="4.2" title="Extension" description="Trove Sync reads your bookmarks through your logged-in X session and sends them here.">
         <a
           href="/trove-sync.zip"
           download
-          className="inline-flex h-9 items-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/85"
+          className="inline-flex h-10 items-center rounded-xl bg-primary px-5 text-sm font-medium text-primary-foreground shadow-[inset_0_1px_0_0_rgba(248,247,244,0.2)] hover:brightness-110"
         >
           Download Trove Sync
         </a>
@@ -71,18 +75,18 @@ export default async function SettingsPage() {
         </ol>
       </Section>
 
-      <Section title="Sync history">
+      <Section index="4.3" title="Sync history">
         {runs.length === 0 ? (
           <p className="text-sm text-muted-foreground">No syncs yet.</p>
         ) : (
           <div className="grid w-full gap-3 sm:grid-cols-2">
             {runs.map((r) => (
-              <div key={r.id} className="flex flex-col items-center gap-1 rounded-2xl bg-raised/60 p-4 text-sm">
+              <div key={r.id} className="well flex flex-col items-center gap-1.5 rounded-xl p-4 text-sm">
                 <div className="flex items-center gap-2">
                   <span className="font-medium capitalize">{r.mode === "incremental" ? "Sync new" : r.mode === "full" ? "Full resync" : "File import"}</span>
                   <span className={cn("text-xs capitalize", STATUS_STYLE[r.status])}>{r.status}</span>
                 </div>
-                <span className="text-xs text-muted-foreground">{fullDate(r.startedAt.toISOString())}</span>
+                <span className="label-mono">{fullDate(r.startedAt.toISOString())}</span>
                 <span className="text-muted-foreground">
                   {r.pages} pages, {r.received} received, {r.inserted} new
                   {r.removed ? `, ${r.removed} removed` : ""}
@@ -99,11 +103,11 @@ export default async function SettingsPage() {
         )}
       </Section>
 
-      <Section title="Taxonomy" description="Tag descriptions guide the AI tagger. Tags the AI proposes wait here for review.">
+      <Section index="4.4" title="Taxonomy" description="Tag descriptions guide the AI tagger. Tags the AI proposes wait here for review.">
         <TaxonomySection tags={tags.map(({ id, value, label, description, color, count, createdBy }) => ({ id, slug: value, name: label, description, color: color ?? null, count, createdBy }))} />
       </Section>
 
-      <Section title="Import and export">
+      <Section index="4.5" title="Import and export">
         <DataSection />
       </Section>
     </div>

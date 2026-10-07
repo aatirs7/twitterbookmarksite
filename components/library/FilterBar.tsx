@@ -11,11 +11,11 @@ import type { LibraryParams } from "./params";
 type Update = (patch: Partial<LibraryParams>) => void;
 
 const chipBase =
-  "inline-flex h-8 items-center gap-1 rounded-full border border-border px-3 text-sm text-muted-foreground transition-colors hover:text-foreground hover:bg-raised";
+  "inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-[13px] text-muted-foreground transition-colors hover:bg-raised hover:text-foreground";
 
 function Chip({ active, children, ...rest }: React.ComponentProps<"button"> & { active?: boolean }) {
   return (
-    <button type="button" {...rest} className={cn(chipBase, active && "border-brand/50 bg-brand/10 text-foreground")}>
+    <button type="button" {...rest} className={cn(chipBase, active && "bg-brand/10 text-foreground ring-1 ring-brand/35")}>
       {children}
     </button>
   );
@@ -24,9 +24,9 @@ function Chip({ active, children, ...rest }: React.ComponentProps<"button"> & { 
 function PopoverChip({ label, active, children, wide }: { label: string; active?: boolean; children: React.ReactNode; wide?: boolean }) {
   return (
     <Popover>
-      <PopoverTrigger className={cn(chipBase, active && "border-brand/50 bg-brand/10 text-foreground")}>
+      <PopoverTrigger className={cn(chipBase, active && "bg-brand/10 text-foreground ring-1 ring-brand/35")}>
         {label}
-        <ChevronDown className="size-3.5" />
+        <ChevronDown className="size-3 text-faint" />
       </PopoverTrigger>
       <PopoverContent className={cn("items-center text-center", wide ? "w-80" : "w-64")}>{children}</PopoverContent>
     </Popover>
@@ -86,7 +86,7 @@ export function FilterBar({ params, facets, update }: { params: LibraryParams; f
 
   return (
     <div className="flex flex-col items-center gap-3">
-      <div className="flex flex-wrap items-center justify-center gap-2">
+      <div className="etched flex flex-wrap items-center justify-center gap-0.5 rounded-xl p-1">
         <PopoverChip label="Tags" active={params.tags.length > 0} wide>
           <FacetList facets={facets.tags} selected={params.tags} onToggle={(v) => update({ tags: toggle(params.tags, v) })} empty="No tags yet" />
         </PopoverChip>
@@ -175,7 +175,7 @@ export function FilterBar({ params, facets, update }: { params: LibraryParams; f
               key={a.key}
               type="button"
               onClick={a.clear}
-              className="inline-flex items-center gap-1 rounded-full bg-raised px-2.5 py-1 text-xs text-foreground hover:bg-raised/70"
+              className="well inline-flex items-center gap-1.5 rounded-md px-2 py-1 font-mono text-[11px] text-foreground hover:border-hairline-strong"
             >
               {a.label}
               <X className="size-3 opacity-60" />
@@ -185,7 +185,7 @@ export function FilterBar({ params, facets, update }: { params: LibraryParams; f
             <button
               type="button"
               onClick={() => update({ tags: [], author: [], domain: [], from: "", to: "", media: "", link: false, pinned: false, removed: "exclude" })}
-              className="px-2 text-xs text-muted-foreground hover:text-foreground"
+              className="label-mono px-2 hover:text-foreground"
             >
               Clear all
             </button>

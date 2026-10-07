@@ -18,25 +18,25 @@ export function AuthorGrid({ authors }: { authors: AuthorSummary[] }) {
         value={q}
         onChange={(e) => setQ(e.target.value)}
         placeholder="Find an author"
-        className="h-11 w-full max-w-md rounded-xl border border-border bg-surface px-4 text-center outline-none focus:border-brand/60"
+        className="etched h-12 w-full max-w-md rounded-xl px-4 text-center outline-none placeholder:text-faint focus:border-brand/50"
       />
       {shown.length === 0 ? (
-        <p className="py-12 text-muted-foreground">No authors found</p>
+        <p className="label-mono py-12">No authors found</p>
       ) : (
         <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {shown.slice(0, 400).map((a) => (
             <Link
               key={a.handle}
               href={`/?author=${encodeURIComponent(a.handle)}`}
-              className="flex flex-col items-center gap-2 rounded-2xl border border-border bg-surface p-4 text-center transition-colors hover:bg-raised"
+              className="etched group flex flex-col items-center gap-2 rounded-2xl p-5 text-center transition-colors hover:border-hairline-strong"
             >
               <Avatar src={a.avatar} name={a.name} size={48} />
-              <span className="flex items-center gap-1 font-medium">
+              <span className="flex items-center gap-1 font-semibold tracking-[-0.01em] group-hover:text-brand">
                 <span className="line-clamp-1">{a.name ?? a.handle}</span>
                 {a.verified && <BadgeCheck className="size-3.5 shrink-0 text-brand" />}
               </span>
               <span className="text-xs text-muted-foreground">@{a.handle}</span>
-              <span className="text-sm text-muted-foreground">{a.count.toLocaleString()}</span>
+              <span className="label-mono tabular">{a.count.toLocaleString()} saved</span>
             </Link>
           ))}
         </div>

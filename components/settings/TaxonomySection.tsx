@@ -49,7 +49,7 @@ function TagCard({ tag, all }: { tag: TagRow; all: TagRow[] }) {
   const dirty = name !== tag.name || description !== (tag.description ?? "");
 
   return (
-    <div className={cn("flex flex-col items-center gap-2 rounded-2xl bg-raised/60 p-4", tag.createdBy === "ai" && "ring-1 ring-brand/50")}>
+    <div className={cn("well flex flex-col items-center gap-2 rounded-xl p-4", tag.createdBy === "ai" && "ring-1 ring-brand/50")}>
       <div className="flex items-center gap-2">
         <Popover>
           <PopoverTrigger className="size-4 rounded-full ring-2 ring-border" style={{ backgroundColor: tag.color ?? "#9AA7B8" }} aria-label="Change color" />
@@ -68,9 +68,9 @@ function TagCard({ tag, all }: { tag: TagRow; all: TagRow[] }) {
             </div>
           </PopoverContent>
         </Popover>
-        <span className="text-xs text-muted-foreground">{tag.count.toLocaleString()} bookmarks</span>
+        <span className="label-mono tabular">{tag.count.toLocaleString()} bookmarks</span>
       </div>
-      {tag.createdBy === "ai" && <span className="text-xs text-brand">Proposed by AI</span>}
+      {tag.createdBy === "ai" && <span className="label-mono text-brand">Proposed by AI</span>}
       <Input value={name} onChange={(e) => setName(e.target.value)} className="text-center font-medium" aria-label="Tag name" />
       <Textarea
         value={description}
@@ -174,7 +174,7 @@ export function TaxonomySection({ tags }: { tags: TagRow[] }) {
 
       {proposed.length > 0 && (
         <div className="flex w-full flex-col items-center gap-3">
-          <h3 className="text-sm font-medium">Waiting for review</h3>
+          <h3 className="label-mono text-brand">Waiting for review</h3>
           <div className="grid w-full gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {proposed.map((t) => (
               <TagCard key={`${t.id}-${t.name}-${t.description}`} tag={t} all={tags} />
