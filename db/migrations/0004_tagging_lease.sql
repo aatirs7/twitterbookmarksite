@@ -1,0 +1,1 @@
+ALTER TABLE "user_settings" ADD COLUMN "tagging_lease_until" timestamp with time zone;

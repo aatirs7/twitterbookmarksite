@@ -223,6 +223,10 @@ export const userSettings = pgTable("user_settings", {
   userId: text("user_id").primaryKey(),
   anthropicKeyEnc: text("anthropic_key_enc"),
   anthropicKeyHint: text("anthropic_key_hint"),
+  /** When the last full Claude recategorize started; used for a cooldown so it cannot be re-run by accident. */
+  lastClaudeRecategorizeAt: ts("last_claude_recategorize_at"),
+  /** Short lease so only one worker sorts with Claude at a time (no double spending). */
+  taggingLeaseUntil: ts("tagging_lease_until"),
   updatedAt: ts("updated_at").notNull().defaultNow(),
 });
 

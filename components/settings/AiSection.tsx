@@ -4,10 +4,12 @@ import { useState, useTransition } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { removeAnthropicKeyAction, retagAllAction, saveAnthropicKeyAction } from "@/app/(app)/settings/actions";
+import { removeAnthropicKeyAction, saveAnthropicKeyAction } from "@/app/(app)/settings/actions";
+import type { TaggingStatus } from "@/lib/ai/recategorize";
+import { RecategorizeButton } from "./RecategorizeButton";
 import { cn } from "@/lib/utils";
 
-export function AiSection({ source, hint }: { source: "user" | "env" | null; hint: string | null }) {
+export function AiSection({ source, hint, tagging }: { source: "user" | "env" | null; hint: string | null; tagging: TaggingStatus }) {
   const [key, setKey] = useState("");
   const [show, setShow] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -85,18 +87,10 @@ export function AiSection({ source, hint }: { source: "user" | "env" | null; hin
             Remove key
           </Button>
         )}
-        <Button
-          variant="ghost"
-          size="sm"
-          disabled={pending}
-          onClick={() => start(async () => {
-            await retagAllAction();
-            toast.success(source ? "Recategorizing with Claude. This can take a few minutes." : "Recategorized with keyword rules.");
-          })}
-        >
-          Recategorize everything now
-        </Button>
+
       </div>
+
+      <RecategorizeButton key={`${tagging.engine}-${tagging.cooldownUntil}`} initial={tagging} />
 
       <p className="max-w-md text-[12px] text-faint">
         Get a key at console.anthropic.com. It is stored encrypted and never shown again. Sorting 1,000 bookmarks with

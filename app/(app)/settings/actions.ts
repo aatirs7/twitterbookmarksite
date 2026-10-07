@@ -7,6 +7,7 @@ import { db } from "@/db";
 import { bookmarkTags, bookmarks, importTokens, tags } from "@/db/schema";
 import Anthropic from "@anthropic-ai/sdk";
 import { saveAnthropicKey } from "@/lib/ai/apiKey";
+import { claimClaudeRecategorize, getTaggingStatus } from "@/lib/ai/recategorize";
 import { tagBookmarks } from "@/lib/ai/tagBookmarks";
 import { createImportToken } from "@/lib/auth/importToken";
 import { requireUser } from "@/lib/auth/user";
@@ -121,12 +122,24 @@ export async function mergeTagsAction(fromId: string, intoId: string) {
   revalidatePath("/settings");
 }
 
-/** Clears automatic categories so every bookmark is sorted again; categories added by hand stay. */
-export async function retagAllAction() {
+/**
+ * Clears automatic categories so every bookmark is sorted again; categories added by hand stay.
+ * Refused while a run is in progress, and for 24 hours after a Claude run, so it cannot overspend.
+ */
+export async function retagAllAction(): Promise<{ ok: true } | { ok: false; error: string }> {
   const userId = await requireUser();
+  const status = await getTaggingStatus(userId);
+  if (status.pending > 0) return { ok: false, error: "Already recategorizing. Wait for it to finish." };
+  if (status.cooldownUntil) {
+    const hours = Math.ceil((new Date(status.cooldownUntil).getTime() - Date.now()) / 3_600_000);
+    return { ok: false, error: `Claude recategorized recently. Available again in about ${hours} h.` };
+  }
+  if (status.engine === "claude" && !(await claimClaudeRecategorize(userId))) {
+    return { ok: false, error: "Claude recategorized recently. Try again tomorrow." };
+  }
   await db.transaction(async (tx) => {
     await tx.delete(bookmarkTags).where(and(eq(bookmarkTags.userId, userId), eq(bookmarkTags.source, "ai")));
-    await tx.update(bookmarks).set({ taggedAt: null }).where(eq(bookmarks.userId, userId));
+    await tx.update(bookmarks).set({ taggedAt: null }).where(and(eq(bookmarks.userId, userId), isNull(bookmarks.removedAt)));
   });
   after(async () => {
     try {
@@ -136,7 +149,7 @@ export async function retagAllAction() {
       console.error("[retag] failed", err);
     }
   });
-  revalidatePath("/settings");
+  return { ok: true };
 }
 
 /** Checks the key against the Anthropic API, then stores it encrypted. */

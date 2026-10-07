@@ -1,0 +1,1 @@
+ALTER TABLE "user_settings" ADD COLUMN "last_claude_recategorize_at" timestamp with time zone;

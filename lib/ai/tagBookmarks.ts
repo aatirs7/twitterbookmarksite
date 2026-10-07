@@ -8,6 +8,7 @@ import { colorForSlug, slugify } from "@/lib/tags/palette";
 import { ensureSeedTags } from "@/lib/tags/seed";
 import { ruleTagBookmarks } from "@/lib/tags/ruleTagBookmarks";
 import { getAnthropicKey } from "./apiKey";
+import { acquireTaggingLease, releaseTaggingLease, renewTaggingLease } from "./lease";
 
 const MODEL = "claude-haiku-4-5";
 const BATCH = 20;
@@ -216,29 +217,46 @@ async function tagBatch(client: Anthropic, userId: string, ids: string[]) {
  * Stops early when `deadline` (epoch ms) passes. Returns the number processed.
  */
 export async function tagBookmarks(userId: string, limit: number, deadline?: number): Promise<number> {
+  return (await runTagging(userId, limit, deadline)).done;
+}
+
+const LEASE_MS = 90_000;
+
+/** Same as tagBookmarks, but also reports when another worker already holds the Claude lease. */
+export async function runTagging(userId: string, limit: number, deadline?: number): Promise<{ done: number; busy: boolean }> {
   await ensureSeedTags(userId);
   // Without an API key, use the free keyword categorizer. It is cheap, so it takes everything pending.
   const { key } = await getAnthropicKey(userId);
-  if (!key) return ruleTagBookmarks(userId, Infinity, deadline);
-  const pending = await db
-    .select({ tweetId: bookmarks.tweetId })
-    .from(bookmarks)
-    .where(and(eq(bookmarks.userId, userId), isNull(bookmarks.taggedAt), isNull(bookmarks.removedAt)))
-    .orderBy(asc(bookmarks.firstSeenAt), asc(bookmarks.sortKey))
-    .limit(limit);
-  if (pending.length === 0) return 0;
+  if (!key) return { done: await ruleTagBookmarks(userId, Infinity, deadline), busy: false };
 
+  // Only one Claude worker per user at a time, so the same bookmarks are never paid for twice.
+  if (!(await acquireTaggingLease(userId, LEASE_MS))) return { done: 0, busy: true };
   const client = new Anthropic({ apiKey: key });
   let done = 0;
-  for (let i = 0; i < pending.length; i += BATCH) {
-    if (deadline && Date.now() > deadline) break;
-    const ids = pending.slice(i, i + BATCH).map((p) => p.tweetId);
-    try {
-      done += await tagBatch(client, userId, ids);
-    } catch (err) {
-      console.error("[tagBookmarks] batch failed", err);
-      if (err instanceof Anthropic.RateLimitError || err instanceof Anthropic.AuthenticationError) break;
+  try {
+    while (done < limit) {
+      if (deadline && Date.now() > deadline) break;
+      const next = await db
+        .select({ tweetId: bookmarks.tweetId })
+        .from(bookmarks)
+        .where(and(eq(bookmarks.userId, userId), isNull(bookmarks.taggedAt), isNull(bookmarks.removedAt)))
+        .orderBy(asc(bookmarks.firstSeenAt), asc(bookmarks.sortKey))
+        .limit(Math.min(BATCH, limit - done));
+      if (next.length === 0) break;
+      await renewTaggingLease(userId, LEASE_MS);
+      try {
+        const n = await tagBatch(client, userId, next.map((p) => p.tweetId));
+        if (n === 0) break;
+        done += n;
+      } catch (err) {
+        console.error("[tagBookmarks] batch failed", err);
+        if (err instanceof Anthropic.RateLimitError || err instanceof Anthropic.AuthenticationError || err instanceof Anthropic.APIConnectionError) break;
+        // Anything else (a malformed post, a bad response): sort this batch with keyword rules so it never blocks the queue.
+        done += await ruleTagBookmarks(userId, next.length);
+      }
     }
+  } finally {
+    await releaseTaggingLease(userId);
   }
-  return done;
+  return { done, busy: false };
 }

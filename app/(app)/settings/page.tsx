@@ -5,9 +5,11 @@ import { PageHeader } from "@/components/app/PageHeader";
 import { AiSection } from "@/components/settings/AiSection";
 import { DataSection } from "@/components/settings/DataSection";
 import { Panel, SettingsTabs } from "@/components/settings/SettingsTabs";
+import { RecategorizeButton } from "@/components/settings/RecategorizeButton";
 import { TaxonomySection } from "@/components/settings/TaxonomySection";
 import { TokensSection } from "@/components/settings/TokensSection";
 import { getAnthropicKey } from "@/lib/ai/apiKey";
+import { getTaggingStatus } from "@/lib/ai/recategorize";
 import { requireUser } from "@/lib/auth/user";
 import { fullDate, relativeDate } from "@/lib/format";
 import { ensureSeedTags } from "@/lib/tags/seed";
@@ -37,7 +39,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
   const userId = await requireUser();
   await ensureSeedTags(userId);
   const { tab } = await searchParams;
-  const [tokens, runs, tags, ai] = await Promise.all([
+  const [tokens, runs, tags, ai, tagging] = await Promise.all([
     db
       .select({ id: importTokens.id, name: importTokens.name, prefix: importTokens.prefix, createdAt: importTokens.createdAt, lastUsedAt: importTokens.lastUsedAt })
       .from(importTokens)
@@ -46,6 +48,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
     db.select().from(syncRuns).where(eq(syncRuns.userId, userId)).orderBy(desc(syncRuns.startedAt)).limit(8),
     listUserTags(userId),
     getAnthropicKey(userId),
+    getTaggingStatus(userId),
   ]);
 
   const extension = (
@@ -133,6 +136,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
                     createdBy,
                   }))}
                 />
+                <RecategorizeButton key={`${tagging.engine}-${tagging.cooldownUntil}`} initial={tagging} label="Recategorize with these keywords" />
               </>
             ),
           },
@@ -141,7 +145,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
             label: "AI",
             content: (
               <Panel label="Anthropic API key" description="Optional. With a key, Claude Haiku sorts bookmarks into categories and writes one-line summaries. Without one, free keyword rules do the sorting.">
-                <AiSection source={ai.source} hint={ai.hint} />
+                <AiSection source={ai.source} hint={ai.hint} tagging={tagging} />
               </Panel>
             ),
           },
