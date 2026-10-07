@@ -16,7 +16,8 @@
     "db:migrate": "tsx db/migrate.ts",
     "db:studio": "drizzle-kit studio",
     "typecheck": "tsc --noEmit",
-    "smoke": "tsx --conditions=react-server --tsconfig tsconfig.json scripts/smoke-db.ts"
+    "smoke": "tsx --conditions=react-server --tsconfig tsconfig.json scripts/smoke-db.ts",
+    "tag": "tsx --conditions=react-server --tsconfig tsconfig.json scripts/tag-all.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.131.0",

@@ -13,12 +13,12 @@ export default async function TagsPage() {
     <div className="flex flex-col items-center gap-8">
       <PageHeader
         index="02"
-        label="Tags"
-        title={<>The <span className="text-muted-foreground italic">taxonomy</span></>}
-        subtitle={`${tags.length} tags. Rename, merge and recolor them in Settings.`}
+        label="Categories"
+        title={<>The <span className="text-muted-foreground italic">categories</span></>}
+        subtitle={`${tags.length} categories, sorted automatically by AI. Rename, merge and recolor them in Settings.`}
       />
       {tags.length === 0 ? (
-        <p className="label-mono py-16 text-center">Tags appear after your first sync is tagged.</p>
+        <p className="label-mono py-16 text-center">Categories fill in once the AI tagger has run.</p>
       ) : (
         <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {tags.map((t) => (

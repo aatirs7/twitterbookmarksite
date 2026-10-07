@@ -87,7 +87,7 @@ export function FilterBar({ params, facets, update }: { params: LibraryParams; f
   return (
     <div className="flex flex-col items-center gap-3">
       <div className="etched flex flex-wrap items-center justify-center gap-0.5 rounded-xl p-1">
-        <PopoverChip label="Tags" active={params.tags.length > 0} wide>
+        <PopoverChip label="Category" active={params.tags.length > 0} wide>
           <FacetList facets={facets.tags} selected={params.tags} onToggle={(v) => update({ tags: toggle(params.tags, v) })} empty="No tags yet" />
         </PopoverChip>
 

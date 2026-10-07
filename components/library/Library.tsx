@@ -8,6 +8,7 @@ import { BookmarkCard, copyLink, togglePin, type CardDialog } from "@/components
 import type { BookmarkItem, Facet, SearchResponse } from "@/lib/bookmarks/types";
 import { tweetUrl } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { CategoryRail } from "./CategoryRail";
 import { FilterBar } from "./FilterBar";
 import { ShortcutsDialog } from "./ShortcutsDialog";
 import { activeFilterCount, paramsToSearch, type LibraryParams } from "./params";
@@ -227,7 +228,7 @@ export function Library({
           {[
             ["Bookmarks", stats.bookmarks],
             ["Authors", stats.authors],
-            ["Tags", stats.tags],
+            ["Categories", stats.tags],
           ].map(([label, value], i) => (
             <div key={label} className="flex items-stretch">
               {i > 0 && <span className="my-2 w-px bg-hairline" />}
@@ -263,6 +264,8 @@ export function Library({
         </p>
 
         <FilterBar params={params} facets={facets} update={update} />
+
+        <CategoryRail categories={allTags} selected={params.tags} onSelect={(slug) => update({ tags: slug ? [slug] : [] })} />
       </div>
 
       <div className="flex w-full items-center gap-3">

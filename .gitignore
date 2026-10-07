@@ -48,3 +48,5 @@ tests/fixtures/real-*.json
 extension/dist
 extension/node_modules
 public/trove-sync.zip
+
+.vercel
