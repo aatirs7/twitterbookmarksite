@@ -212,3 +212,37 @@
     transition-delay: 0ms;
   }
 }
+
+/* Native-feeling touch and iOS behavior. */
+html {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+a,
+button,
+[role="tab"] {
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+}
+nav,
+button,
+[role="tablist"] {
+  -webkit-user-select: none;
+  user-select: none;
+}
+/* iOS zooms into any field under 16px when focused; keep fields at 16px on phones. */
+@media (max-width: 767px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+/* Installed app: no rubber-band bounce past the page edges, no pull-to-refresh glow. */
+@media (display-mode: standalone) {
+  html,
+  body {
+    overscroll-behavior: none;
+  }
+}

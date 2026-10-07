@@ -2,7 +2,16 @@ import { NextResponse, type NextRequest } from "next/server";
 import { SESSION_COOKIE, verifySessionValue } from "@/lib/auth/session";
 
 // Routes that authenticate themselves (bearer import tokens, cron secret) or are public.
-const PUBLIC = [/^\/login$/, /^\/api\/import\/(ping|start|page|finish)$/, /^\/api\/cron\//, /^\/trove-sync\.zip$/];
+const PUBLIC = [
+  /^\/login$/,
+  /^\/api\/import\/(ping|start|page|finish)$/,
+  /^\/api\/cron\//,
+  /^\/trove-sync\.zip$/,
+  // Install assets must load before sign-in so iOS and browsers can read them.
+  /^\/manifest\.webmanifest$/,
+  /^\/(icon|apple-icon)(\.png)?$/,
+  /^\/pwa-icon\/\d+$/,
+];
 
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;

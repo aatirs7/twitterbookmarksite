@@ -8,7 +8,7 @@ const FEATURES = ["Full text search", "Auto categories", "Synced from X"];
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const { next } = await searchParams;
   return (
-    <main className="relative flex min-h-dvh flex-col overflow-hidden">
+    <main className="relative flex min-h-dvh flex-col overflow-hidden pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
       <div aria-hidden className="grid-canvas pointer-events-none absolute inset-0" />
       <div
         aria-hidden

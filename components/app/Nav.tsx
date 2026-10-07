@@ -11,10 +11,10 @@ const LINKS = [
   { href: "/settings", label: "Settings" },
 ];
 
-export function Nav() {
+export function Nav({ className }: { className?: string }) {
   const pathname = usePathname();
   return (
-    <nav className="etched flex items-stretch rounded-xl p-0.5 text-[13px]">
+    <nav className={cn("etched flex items-stretch rounded-xl p-0.5 text-[13px]", className)}>
       {LINKS.map((l, i) => {
         const active = l.href === "/" ? pathname === "/" : pathname.startsWith(l.href);
         return (
