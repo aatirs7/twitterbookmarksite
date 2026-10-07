@@ -1,36 +1,31 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Trove
 
-## Getting Started
+Searchable, auto-tagged library of your X bookmarks. Two parts:
 
-First, run the development server:
+- **Trove Web** (this Next.js app): stores, indexes, tags and displays bookmarks.
+- **Trove Sync** (`/extension`): an MV3 Chrome extension that reads bookmarks through your logged-in X session and sends them to Trove Web.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Setup
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+1. Copy `.env.example` to `.env.local` and fill in `DATABASE_URL` (Neon), `TROVE_PASSWORD`, `SESSION_SECRET`, `CRON_SECRET`, and `ANTHROPIC_API_KEY`.
+2. `pnpm install`
+3. `pnpm db:migrate`
+4. `pnpm dev` and sign in at http://localhost:3000 with `TROVE_PASSWORD`.
+5. Settings, create an import token.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Extension
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `pnpm ext:build:dev` builds against `http://localhost:3000`; `pnpm ext:build` uses `TROVE_URL`.
+- Load `extension/dist` via chrome://extensions, Developer mode, Load unpacked.
+- In the extension options paste the token, test the connection, then set `EXTENSION_ORIGIN` on the server to the origin it shows.
+- Open https://x.com/i/bookmarks once so it can learn the request format, then click Sync new.
 
-## Learn More
+`pnpm build` also builds the extension and writes `public/trove-sync.zip` for the Settings download link.
 
-To learn more about Next.js, take a look at the following resources:
+## Deploy (Vercel)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Set `DATABASE_URL`, `TROVE_PASSWORD`, `SESSION_SECRET`, `CRON_SECRET`, `ANTHROPIC_API_KEY`, `TROVE_URL` (your deployment URL), and `EXTENSION_ORIGIN`. `vercel.json` registers the single hourly cron.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Scripts
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`pnpm test` (normalizer and query parser), `pnpm smoke` (ingest and search against the database with a throwaway user), `pnpm typecheck`, `pnpm lint`.

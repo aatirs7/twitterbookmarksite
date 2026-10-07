@@ -12,6 +12,7 @@ async function main() {
   const { startRun, finishRun } = await import("@/lib/import/runs");
   const { searchBookmarks } = await import("@/lib/search/buildSql");
   const { addTag } = await import("@/lib/bookmarks/mutations");
+  const { relatedBookmarks } = await import("@/lib/bookmarks/related");
 
   const userId = `smoke_${Date.now()}`;
   const page = parseBookmarksResponse(JSON.parse(fs.readFileSync("tests/fixtures/synthetic-page.json", "utf8")));
@@ -29,6 +30,11 @@ async function main() {
     await finishRun({ userId, runId: run1, completed: true });
 
     await addTag(userId, "1800000000000000006", { name: "Dev tools" });
+    await addTag(userId, "1800000000000000001", { name: "Dev tools" });
+    const rel = await relatedBookmarks(userId, "1800000000000000001");
+    check("related finds shared-tag bookmark", rel.some((i) => i.tweetId === "1800000000000000006"), rel.map((i) => i.tweetId));
+    const relText = await relatedBookmarks(userId, "1800000000000000002");
+    check("related runs on text-only bookmark", Array.isArray(relText), relText.length);
 
     const s = async (q: string, extra: Record<string, unknown> = {}) => searchBookmarks(userId, { q, ...extra });
     let res = await s("claude code");
@@ -45,7 +51,7 @@ async function main() {
     res = await s("claude -agents");
     check("-agents excludes", res.items.every((i) => i.tweetId !== "1800000000000000001"), res.items.map((i) => i.tweetId));
     res = await s("tag:dev-tools");
-    check("tag:dev-tools", res.total === 1, res.total);
+    check("tag:dev-tools", res.total === 2, res.total);
     res = await s("original quoted");
     check("quoted text searchable", res.items[0]?.tweetId === "1800000000000000003" && !!res.items[0].tweet.quoted, res.items.map((i) => i.tweetId));
     res = await s("long article");
