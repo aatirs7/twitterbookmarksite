@@ -8,8 +8,8 @@ const mono = JetBrains_Mono({ variable: "--font-jetbrains", subsets: ["latin"] }
 const serif = Instrument_Serif({ variable: "--font-instrument", subsets: ["latin"], weight: "400", style: ["normal", "italic"] });
 
 export const metadata: Metadata = {
-  title: "Trove",
-  description: "Your X bookmarks, searchable.",
+  title: "XBookmarkVault",
+  description: "Your X bookmarks, searchable and sorted.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

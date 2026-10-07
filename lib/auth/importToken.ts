@@ -4,7 +4,7 @@ import { and, eq, isNull } from "drizzle-orm";
 import { db } from "@/db";
 import { importTokens } from "@/db/schema";
 
-const TOKEN_PREFIX = "trove_";
+const TOKEN_PREFIX = "xbv_";
 
 export function hashToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");

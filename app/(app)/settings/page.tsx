@@ -11,7 +11,7 @@ import { listUserTags } from "@/lib/tags/queries";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/app/PageHeader";
 
-export const metadata = { title: "Settings | Trove" };
+export const metadata = { title: "Settings | XBookmarkVault" };
 
 function Section({ index, title, description, children }: { index: string; title: string; description?: string; children: React.ReactNode }) {
   return (
@@ -52,19 +52,19 @@ export default async function SettingsPage() {
     <div className="flex flex-col items-center gap-8">
       <PageHeader index="04" label="Settings" title={<>The <span className="text-muted-foreground italic">controls</span></>} />
 
-      <Section index="4.1" title="Import tokens" description="The Trove Sync extension uses a token to send bookmarks here. Tokens are shown once.">
+      <Section index="4.1" title="Import tokens" description="The XBookmarkVault extension uses a token to send bookmarks here. Tokens are shown once.">
         <TokensSection
           tokens={tokens.map((t) => ({ ...t, createdAt: t.createdAt.toISOString(), lastUsedAt: t.lastUsedAt?.toISOString() ?? null }))}
         />
       </Section>
 
-      <Section index="4.2" title="Extension" description="Trove Sync reads your bookmarks through your logged-in X session and sends them here.">
+      <Section index="4.2" title="Extension" description="The extension reads your bookmarks through your logged-in X session and sends them here.">
         <a
           href="/trove-sync.zip"
-          download
+          download="XBookmarkVault-extension.zip"
           className="inline-flex h-10 items-center rounded-xl bg-primary px-5 text-sm font-medium text-primary-foreground shadow-[inset_0_1px_0_0_rgba(248,247,244,0.2)] hover:brightness-110"
         >
-          Download Trove Sync
+          Download the extension
         </a>
         <ol className="flex max-w-md flex-col items-center gap-1.5 text-sm text-muted-foreground">
           <li>1. Unzip it somewhere permanent.</li>

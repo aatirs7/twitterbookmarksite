@@ -53,7 +53,7 @@ export function App() {
         err instanceof ApiError && err.status === 401
           ? `Token rejected: ${err.message}`
           : err instanceof ApiError && err.status === 403
-            ? "Trove refused this extension origin. Check EXTENSION_ORIGIN on the server."
+            ? "XBookmarkVault refused this extension origin. Check EXTENSION_ORIGIN on the server."
             : err instanceof Error
               ? err.message
               : String(err);
@@ -79,15 +79,15 @@ export function App() {
       <main className="mx-auto max-w-[560px] px-4 pt-14 pb-12 flex flex-col items-center gap-3 text-center">
         <header className="flex flex-col items-center gap-2.5 pb-6">
           <Label>
-            Trove / Sync{version && <span className="normal-case"> / v{version}</span>}
+            Extension{version && <span className="normal-case"> / v{version}</span>}
           </Label>
-          <h1 className="wordmark text-[56px]">Trove</h1>
-          <p className="text-[13px] text-muted max-w-[360px]">Settings for syncing your X bookmarks to Trove.</p>
+          <h1 className="wordmark text-[52px]">XBookmark<span className="italic opacity-60">Vault</span></h1>
+          <p className="text-[13px] text-muted max-w-[360px]">Settings for syncing your X bookmarks to XBookmarkVault.</p>
         </header>
 
         <Card label="01 / Connection" className="gap-4 p-6">
           <label className="w-full flex flex-col items-center gap-2">
-            <span className="label-mono">Trove Web URL</span>
+            <span className="label-mono">Site URL</span>
             <input
               type="url"
               value={url}
@@ -105,7 +105,7 @@ export function App() {
               type={showToken ? "text" : "password"}
               value={token}
               onChange={(e) => setToken(e.target.value)}
-              placeholder="Paste the token from Trove settings"
+              placeholder="Paste the token from XBookmarkVault settings"
               autoComplete="off"
               className="input input-mono"
               spellCheck={false}
@@ -168,7 +168,7 @@ export function App() {
                 <Dot tone="warn" />
                 <span>Not learned yet</span>
               </p>
-              <p className="text-[13px] text-muted max-w-[380px]">Open your X bookmarks once so Trove can learn the request format.</p>
+              <p className="text-[13px] text-muted max-w-[380px]">Open your X bookmarks once so XBookmarkVault can learn the request format.</p>
               <Button variant="secondary" onClick={() => chrome.tabs.create({ url: "https://x.com/i/bookmarks" })}>
                 Open X bookmarks
               </Button>

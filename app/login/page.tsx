@@ -1,8 +1,9 @@
+import { Wordmark } from "@/components/app/Wordmark";
 import { LoginForm } from "./LoginForm";
 
-export const metadata = { title: "Trove" };
+export const metadata = { title: "XBookmarkVault" };
 
-const FEATURES = ["Full text search", "AI tagging", "Synced from X"];
+const FEATURES = ["Full text search", "Auto categories", "Synced from X"];
 
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const { next } = await searchParams;
@@ -17,7 +18,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
 
       <div className="relative mx-auto flex w-full max-w-5xl flex-1 flex-col border-x border-hairline">
         <div className="flex h-12 items-center justify-center gap-3 border-b border-hairline">
-          <span className="label-mono">Trove</span>
+          <span className="label-mono">XBookmarkVault</span>
           <span className="h-3 w-px bg-hairline-strong" />
           <span className="label-mono">Private archive</span>
         </div>
@@ -29,7 +30,9 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
               <span className="h-px w-8 bg-hairline-strong" />
               <span className="label-mono">Sign in</span>
             </div>
-            <h1 className="font-serif text-[104px] leading-[0.8] tracking-[-0.045em] italic sm:text-[168px]">Trove</h1>
+            <h1 className="text-[44px] sm:text-[88px] lg:text-[104px]">
+              <Wordmark className="tracking-[-0.04em]" />
+            </h1>
             <p className="max-w-sm text-[15px] text-muted-foreground">
               Your X bookmarks, <span className="font-serif text-[18px] text-foreground italic">indexed</span> and searchable.
             </p>

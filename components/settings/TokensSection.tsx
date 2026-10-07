@@ -61,7 +61,7 @@ export function TokensSection({ tokens }: { tokens: TokenRow[] }) {
           {tokens.map((t) => (
             <div key={t.id} className="well flex flex-col items-center gap-1 rounded-xl p-3 text-sm">
               <span className="font-medium">{t.name}</span>
-              <code className="label-mono">trove_{t.prefix}...</code>
+              <code className="label-mono">{t.prefix}...</code>
               <span className="text-xs text-muted-foreground">
                 {t.lastUsedAt ? `Last used ${fullDate(t.lastUsedAt)}` : "Never used"}
               </span>

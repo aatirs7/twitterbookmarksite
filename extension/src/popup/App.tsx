@@ -30,7 +30,7 @@ function useConnection(troveUrl: string, token: string, loaded: boolean): Conn {
           err instanceof ApiError && err.status === 401
             ? "Import token rejected"
             : err instanceof ApiError && err.status === 0
-              ? "Trove is unreachable"
+              ? "XBookmarkVault is unreachable"
               : err instanceof Error
                 ? err.message
                 : "Connection failed";
@@ -82,7 +82,7 @@ export function App() {
 
       {!store.token ? (
         <Card label="01 / Setup">
-          <p className="text-[13px] text-fg max-w-[260px]">Add your Trove import token to start syncing.</p>
+          <p className="text-[13px] text-fg max-w-[260px]">Add your XBookmarkVault import token to start syncing.</p>
           <Button className="w-full" onClick={() => chrome.runtime.openOptionsPage()}>
             Open Options
           </Button>
@@ -123,7 +123,7 @@ function Header({ conn }: { conn: Conn }) {
   return (
     <header className="flex flex-col items-center gap-2.5 pb-1.5">
       <div className="flex flex-col items-center gap-1.5">
-        <h1 className="wordmark text-[40px]">Trove</h1>
+        <h1 className="wordmark text-[30px]">XBookmark<span className="italic opacity-60">Vault</span></h1>
         <Label>
           Sync{version && <span className="normal-case"> / v{version}</span>}
         </Label>
@@ -136,7 +136,7 @@ function Header({ conn }: { conn: Conn }) {
 function ConnectionLine({ conn }: { conn: Conn }) {
   const [tone, label, detail] =
     conn.state === "ok"
-      ? (["ok", "Connected", conn.bookmarks !== undefined ? `${plural(conn.bookmarks, "bookmark", "bookmarks")} in Trove` : null] as const)
+      ? (["ok", "Connected", conn.bookmarks !== undefined ? `${plural(conn.bookmarks, "bookmark", "bookmarks")} in XBookmarkVault` : null] as const)
       : conn.state === "checking"
         ? (["muted", "Checking", null] as const)
         : conn.state === "none"
@@ -171,7 +171,7 @@ function TemplateStatus({ store, now }: { store: StoreState; now: number }) {
         <Dot tone="warn" />
         <span>Not learned yet</span>
       </p>
-      <p className="text-[12px] text-muted max-w-[270px]">Open your X bookmarks once so Trove can learn the request format.</p>
+      <p className="text-[12px] text-muted max-w-[270px]">Open your X bookmarks once so XBookmarkVault can learn the request format.</p>
       <Button variant="secondary" className="w-full" onClick={() => chrome.tabs.create({ url: "https://x.com/i/bookmarks" })}>
         Open X bookmarks
       </Button>
@@ -296,7 +296,7 @@ function RunPanel({
         <div className="w-full flex flex-col items-center gap-1">
           {run.status === "done" && (
             <Button className="w-full" onClick={() => chrome.tabs.create({ url: store.troveUrl })}>
-              Open Trove
+              Open XBookmarkVault
             </Button>
           )}
           <Button variant="text" onClick={() => act({ type: "dismiss" })}>

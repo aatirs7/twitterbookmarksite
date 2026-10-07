@@ -28,6 +28,8 @@ interface Props {
   onFocus?: () => void;
   /** Position in the list, shown as a catalog number. */
   index?: number;
+  /** Denser layout used when the grid is zoomed out. */
+  compact?: boolean;
 }
 
 function IconAction({ label, onClick, href, active, children }: {
@@ -77,7 +79,7 @@ export async function copyLink(item: BookmarkItem) {
 }
 
 export const BookmarkCard = forwardRef<HTMLElement, Props>(function BookmarkCard(
-  { item, allTags, focused, index, dialog: dialogProp, onDialogChange, onUpdate, onFocus },
+  { item, allTags, focused, index, compact, dialog: dialogProp, onDialogChange, onUpdate, onFocus },
   ref,
 ) {
   const [localDialog, setLocalDialog] = useState<CardDialog>(null);
@@ -112,7 +114,7 @@ export const BookmarkCard = forwardRef<HTMLElement, Props>(function BookmarkCard
         </span>
       )}
 
-      <div className="flex flex-col items-center gap-3 px-5 pt-5 pb-4">
+      <div className={cn("flex flex-col items-center", compact ? "gap-2 px-3.5 pt-4 pb-3" : "gap-3 px-5 pt-5 pb-4")}>
         <AuthorLine tweet={tweet} />
 
         {tweet.isArticle && tweet.articleTitle && (
@@ -123,7 +125,12 @@ export const BookmarkCard = forwardRef<HTMLElement, Props>(function BookmarkCard
           <div className="label-mono py-2">No longer available on X</div>
         ) : (
           <div className="w-full">
-            <TweetText text={tweet.text} headline={item.headline} clamp={!expanded} className="text-[14.5px] leading-[1.6]" />
+            <TweetText
+              text={tweet.text}
+              headline={item.headline}
+              clamp={!expanded}
+              className={compact ? cn("text-[13px] leading-[1.5]", !expanded && "line-clamp-5") : "text-[14.5px] leading-[1.6]"}
+            />
             {long && (
               <button type="button" onClick={() => setExpanded((v) => !v)} className="label-mono mt-2 text-brand hover:opacity-80">
                 {expanded ? "Show less" : "Read more"}
@@ -165,7 +172,7 @@ export const BookmarkCard = forwardRef<HTMLElement, Props>(function BookmarkCard
           </div>
         )}
 
-        {item.aiSummary && (
+        {item.aiSummary && !compact && (
           <p className="max-h-0 overflow-hidden font-serif text-[15px] leading-snug text-muted-foreground italic opacity-0 transition-all duration-300 group-focus-within:max-h-24 group-focus-within:opacity-100 group-hover:max-h-24 group-hover:opacity-100">
             {item.aiSummary}
           </p>

@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/app/PageHeader";
 import { requireUser } from "@/lib/auth/user";
 import { listUserTags } from "@/lib/tags/queries";
 
-export const metadata = { title: "Tags | Trove" };
+export const metadata = { title: "Tags | XBookmarkVault" };
 
 export default async function TagsPage() {
   const userId = await requireUser();

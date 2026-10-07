@@ -58,7 +58,7 @@ async function once<T>(url: string, token: string, opts: CallOptions): Promise<T
       body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
     });
   } catch (err) {
-    throw new ApiError(0, `Could not reach Trove (${err instanceof Error ? err.message : String(err)})`);
+    throw new ApiError(0, `Could not reach XBookmarkVault (${err instanceof Error ? err.message : String(err)})`);
   }
   const text = await res.text();
   let json: unknown = null;
@@ -70,7 +70,7 @@ async function once<T>(url: string, token: string, opts: CallOptions): Promise<T
   if (!res.ok) {
     const serverError =
       json && typeof json === "object" && "error" in json ? String((json as { error: unknown }).error) : "";
-    throw new ApiError(res.status, serverError || `Trove responded ${res.status}`);
+    throw new ApiError(res.status, serverError || `XBookmarkVault responded ${res.status}`);
   }
   return json as T;
 }

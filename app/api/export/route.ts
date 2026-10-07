@@ -9,7 +9,7 @@ import { tweetUrl } from "@/lib/format";
 export const maxDuration = 120;
 
 function toMarkdown(items: BookmarkItem[]): string {
-  const out: string[] = [`# Trove export`, ``, `${items.length} bookmarks, exported ${new Date().toISOString()}`, ``];
+  const out: string[] = [`# XBookmarkVault export`, ``, `${items.length} bookmarks, exported ${new Date().toISOString()}`, ``];
   for (const i of items) {
     const t = i.tweet;
     out.push(`## ${t.authorName ?? t.authorHandle ?? "Unknown"} (@${t.authorHandle ?? "unknown"})`);
@@ -58,14 +58,14 @@ export async function GET(req: NextRequest) {
     return new NextResponse(toMarkdown(items), {
       headers: {
         "content-type": "text/markdown; charset=utf-8",
-        "content-disposition": `attachment; filename="trove-${stamp}.md"`,
+        "content-disposition": `attachment; filename="xbookmarkvault-${stamp}.md"`,
       },
     });
   }
   return new NextResponse(JSON.stringify({ exportedAt: new Date().toISOString(), count: items.length, bookmarks: items }, null, 2), {
     headers: {
       "content-type": "application/json; charset=utf-8",
-      "content-disposition": `attachment; filename="trove-${stamp}.json"`,
+      "content-disposition": `attachment; filename="xbookmarkvault-${stamp}.json"`,
     },
   });
 }

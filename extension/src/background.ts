@@ -1,5 +1,5 @@
 /**
- * Service worker: orchestrates syncs and talks to Trove Web.
+ * Service worker: orchestrates syncs and talks to XBookmarkVault Web.
  *
  * It is stateless on purpose. Every handler reloads the run from chrome.storage.local,
  * because MV3 workers are killed after ~30 s idle and the runner's next page message
@@ -216,7 +216,7 @@ async function requireReady(): Promise<BookmarksTemplate> {
   const settings = await getSettings();
   if (!settings.token) throw new Error("Add your import token in Options first.");
   const template = await getTemplate();
-  if (!template) throw new Error("Open your X bookmarks once so Trove can learn the request format.");
+  if (!template) throw new Error("Open your X bookmarks once so XBookmarkVault can learn the request format.");
   return template;
 }
 
@@ -330,7 +330,7 @@ interface Outcome {
   error?: string;
 }
 
-/** Tells Trove the run is over and records the final state. Safe to call once per run. */
+/** Tells XBookmarkVault the run is over and records the final state. Safe to call once per run. */
 async function completeRun(runId: string, outcome: Outcome) {
   const before = await withLock(async () => {
     const run = await getRun();
@@ -356,7 +356,7 @@ async function completeRun(runId: string, outcome: Outcome) {
 
   const status: RunState["status"] = outcome.completed ? "done" : outcome.cancelled ? "cancelled" : "error";
   let message = outcome.error ?? null;
-  if (notifyError) message = [message, `Could not notify Trove: ${notifyError}`].filter(Boolean).join(" ");
+  if (notifyError) message = [message, `Could not notify XBookmarkVault: ${notifyError}`].filter(Boolean).join(" ");
 
   await withLock(async () => {
     await patchRun(runId, { status, summary, message, waitUntil: null });
@@ -428,8 +428,8 @@ async function onPage(run: RunState, msg: Extract<RunnerOutbound, { type: "page"
   } catch (err) {
     const message =
       err instanceof ApiError && err.status === 409
-        ? "Trove closed this sync run. Start a new sync."
-        : `Could not send page ${msg.page} to Trove: ${errMsg(err)}`;
+        ? "XBookmarkVault closed this sync run. Start a new sync."
+        : `Could not send page ${msg.page} to XBookmarkVault: ${errMsg(err)}`;
     void completeRun(run.runId, { completed: false, error: message });
     return { continue: false, error: message };
   }
@@ -474,7 +474,7 @@ async function reconcileUnlocked(): Promise<RunState | undefined> {
   } else if (run.status === "finishing") {
     // The worker died while closing the run. Give up on it rather than leaving it stuck.
     if (Date.now() - run.heartbeatAt < 120_000) return run;
-    return patchRun(run.runId, { status: "error", message: "The sync stopped while finishing. Trove may not have recorded the end of this run." });
+    return patchRun(run.runId, { status: "error", message: "The sync stopped while finishing. XBookmarkVault may not have recorded the end of this run." });
   } else if (run.status !== "running" && run.status !== "waiting") {
     return run;
   }

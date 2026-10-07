@@ -103,15 +103,15 @@ const hostPermissions = [
 
 const manifest = {
   manifest_version: 3,
-  name: "Trove Sync",
+  name: "XBookmarkVault",
   version: pkg.version,
   ...(dev ? { version_name: `${pkg.version} dev` } : {}),
-  description: "Syncs your X bookmarks to Trove when you ask it to.",
+  description: "Syncs your X bookmarks to XBookmarkVault when you ask it to.",
   minimum_chrome_version: "111",
   permissions: ["storage", "scripting", "tabs"],
   host_permissions: hostPermissions,
   background: { service_worker: "background.js" },
-  action: { default_title: "Trove Sync", default_popup: "popup/index.html", default_icon: icons },
+  action: { default_title: "XBookmarkVault", default_popup: "popup/index.html", default_icon: icons },
   options_ui: { page: "options/index.html", open_in_tab: true },
   icons,
   content_scripts: [
@@ -121,6 +121,6 @@ const manifest = {
 };
 writeFileSync(resolve(dist, "manifest.json"), JSON.stringify(manifest, null, 2) + "\n");
 
-console.log(`Trove Sync built (${mode}) -> ${dist}`);
-console.log(`  Trove URL: ${rawUrl}`);
+console.log(`XBookmarkVault extension built (${mode}) -> ${dist}`);
+console.log(`  Site URL: ${rawUrl}`);
 console.log(`  host_permissions: ${hostPermissions.join(", ")}`);

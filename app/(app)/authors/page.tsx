@@ -3,7 +3,7 @@ import { PageHeader } from "@/components/app/PageHeader";
 import { requireUser } from "@/lib/auth/user";
 import { listAuthors } from "@/lib/tags/queries";
 
-export const metadata = { title: "Authors | Trove" };
+export const metadata = { title: "Authors | XBookmarkVault" };
 
 export default async function AuthorsPage() {
   const userId = await requireUser();

@@ -2,14 +2,14 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Search } from "lucide-react";
+import { Loader2, Minus, Plus, Search } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { BookmarkCard, copyLink, togglePin, type CardDialog } from "@/components/bookmark/BookmarkCard";
 import type { BookmarkItem, Facet, SearchResponse } from "@/lib/bookmarks/types";
 import { tweetUrl } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { CategoryRail } from "./CategoryRail";
-import { FilterBar } from "./FilterBar";
+import { ActiveFilters, FiltersButton } from "./FilterBar";
 import { ShortcutsDialog } from "./ShortcutsDialog";
 import { activeFilterCount, paramsToSearch, type LibraryParams } from "./params";
 
@@ -20,12 +20,20 @@ const SORT_LABELS: Record<string, string> = {
   likes: "Most liked",
 };
 
-function useColumnCount() {
+/** Zoom levels: 0 is the largest cards; each step out adds a column (up to the viewport's limit). */
+const ZOOM_LEVELS = 4;
+const ZOOM_KEY = "xbv:zoom";
+
+function useColumnCount(zoom: number) {
   const [cols, setCols] = useState(3);
   useEffect(() => {
     const md = window.matchMedia("(min-width: 768px)");
     const lg = window.matchMedia("(min-width: 1100px)");
-    const update = () => setCols(lg.matches ? 3 : md.matches ? 2 : 1);
+    const update = () => {
+      const base = lg.matches ? 3 : md.matches ? 2 : 1;
+      const max = lg.matches ? 5 : md.matches ? 3 : 2;
+      setCols(Math.min(max, Math.max(1, base + zoom - 1)));
+    };
     update();
     md.addEventListener("change", update);
     lg.addEventListener("change", update);
@@ -33,7 +41,7 @@ function useColumnCount() {
       md.removeEventListener("change", update);
       lg.removeEventListener("change", update);
     };
-  }, []);
+  }, [zoom]);
   return cols;
 }
 
@@ -68,7 +76,24 @@ export function Library({
   const sentinelRef = useRef<HTMLDivElement>(null);
   const requestId = useRef(0);
   const firstRender = useRef(true);
-  const cols = useColumnCount();
+  const [zoom, setZoomState] = useState(1);
+  const cols = useColumnCount(zoom);
+  const compact = cols >= 4;
+  const setZoom = useCallback((z: number) => {
+    const next = Math.min(ZOOM_LEVELS - 1, Math.max(0, z));
+    setZoomState(next);
+    try {
+      localStorage.setItem(ZOOM_KEY, String(next));
+    } catch {}
+  }, []);
+  useEffect(() => {
+    try {
+      const saved = Number(localStorage.getItem(ZOOM_KEY));
+      // Restored after hydration on purpose: reading storage during render would mismatch the server HTML.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      if (Number.isInteger(saved) && saved >= 0 && saved < ZOOM_LEVELS) setZoomState(saved);
+    } catch {}
+  }, []);
 
   const update = useCallback((patch: Partial<LibraryParams>) => setParams((p) => ({ ...p, ...patch })), []);
 
@@ -192,11 +217,18 @@ export function Library({
         case "c":
           if (item) void copyLink(item);
           break;
+        case "-":
+          setZoom(zoom + 1);
+          break;
+        case "=":
+        case "+":
+          setZoom(zoom - 1);
+          break;
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [data.items, focusIndex, focusCard, router, update, updateItem]);
+  }, [data.items, focusIndex, focusCard, router, update, updateItem, zoom, setZoom]);
 
   const effectiveSort = params.sort || (params.q.trim() ? "relevance" : "newest");
   const tagFacets = data.facets.tags.length ? data.facets.tags : allTags;
@@ -212,36 +244,21 @@ export function Library({
   const hasQueryOrFilters = !!params.q.trim() || activeFilterCount(params) > 0;
 
   return (
-    <div className="flex flex-col items-center gap-8">
-      <section className="rise flex w-full flex-col items-center gap-6 pt-4 text-center">
-        <div className="flex items-center gap-2">
-          <span className="label-mono text-brand">01</span>
-          <span className="h-px w-6 bg-hairline-strong" />
-          <span className="label-mono">Library</span>
-        </div>
-        <h1 className="font-serif text-[56px] leading-[0.92] tracking-[-0.03em] sm:text-[84px]">
-          Every bookmark,
-          <br />
-          <span className="text-muted-foreground italic">findable.</span>
+    <div className="flex flex-col items-center gap-6">
+      <section className="rise flex flex-col items-center gap-3 pt-2 text-center">
+        <h1 className="font-serif text-[40px] leading-none tracking-[-0.03em] sm:text-[56px]">
+          Every bookmark, <span className="text-muted-foreground italic">findable.</span>
         </h1>
-        <div className="etched flex items-stretch rounded-xl">
-          {[
-            ["Bookmarks", stats.bookmarks],
-            ["Authors", stats.authors],
-            ["Categories", stats.tags],
-          ].map(([label, value], i) => (
-            <div key={label} className="flex items-stretch">
-              {i > 0 && <span className="my-2 w-px bg-hairline" />}
-              <div className="flex flex-col items-center gap-1 px-5 py-2.5 sm:px-7">
-                <span className="tabular text-lg font-semibold tracking-[-0.02em]">{Number(value).toLocaleString()}</span>
-                <span className="label-mono">{label}</span>
-              </div>
-            </div>
-          ))}
-        </div>
+        <p className="label-mono tabular">
+          <span className="text-foreground">{stats.bookmarks.toLocaleString()}</span> saved
+          <span className="mx-2.5 text-hairline-strong">/</span>
+          <span className="text-foreground">{stats.authors.toLocaleString()}</span> authors
+          <span className="mx-2.5 text-hairline-strong">/</span>
+          <span className="text-foreground">{stats.tags.toLocaleString()}</span> categories
+        </p>
       </section>
 
-      <div className="rise flex w-full flex-col items-center gap-4 [animation-delay:80ms]">
+      <div className="rise flex w-full flex-col items-center gap-3 [animation-delay:60ms]">
         <div className="group relative w-full max-w-2xl">
           <Search className="pointer-events-none absolute top-1/2 left-5 size-[18px] -translate-y-1/2 text-faint transition-colors group-focus-within:text-brand" />
           <input
@@ -249,34 +266,37 @@ export function Library({
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search text, people, links, tags"
+            placeholder="Search text, people, links"
             aria-label="Search bookmarks"
-            className="etched h-14 w-full rounded-2xl px-14 text-center text-[16px] outline-none transition-[border-color,box-shadow] placeholder:text-faint focus:border-brand/50 focus:shadow-[inset_0_1px_0_0_var(--highlight),0_0_0_4px_var(--mark)]"
+            className="etched h-13 w-full rounded-2xl px-14 text-center text-[15.5px] outline-none transition-[border-color,box-shadow] placeholder:text-faint focus:border-brand/50 focus:shadow-[inset_0_1px_0_0_var(--highlight),0_0_0_4px_var(--mark)]"
           />
           {loading ? (
             <Loader2 className="absolute top-1/2 right-5 size-[18px] -translate-y-1/2 animate-spin text-faint" />
           ) : (
             <kbd className="well absolute top-1/2 right-4 hidden -translate-y-1/2 rounded-md px-1.5 py-0.5 font-mono text-[11px] text-faint sm:block">/</kbd>
           )}
+          {/* Operator hints only while typing, so the page stays calm. */}
+          <p className="label-mono pointer-events-none absolute inset-x-0 top-full mt-2 hidden text-center opacity-0 transition-opacity duration-200 group-focus-within:opacity-100 sm:block">
+            from:handle &nbsp; has:video &nbsp; site:github.com &nbsp; &quot;exact phrase&quot; &nbsp; -exclude
+          </p>
         </div>
-        <p className="label-mono hidden sm:block">
-          Try from:handle &nbsp; has:video &nbsp; site:github.com &nbsp; tag:design &nbsp; &quot;exact phrase&quot; &nbsp; -exclude
-        </p>
 
-        <FilterBar params={params} facets={facets} update={update} />
-
-        <CategoryRail categories={allTags} selected={params.tags} onSelect={(slug) => update({ tags: slug ? [slug] : [] })} />
+        <div className="mt-6 flex w-full justify-center">
+          <CategoryRail categories={allTags} selected={params.tags} onSelect={(slug) => update({ tags: slug ? [slug] : [] })} />
+        </div>
       </div>
 
       <div className="flex w-full items-center gap-3">
         <span className="h-px flex-1 bg-hairline" />
-        <div className="flex flex-wrap items-center justify-center gap-2.5">
-          <span className="label-mono tabular text-muted-foreground">
+        <div className="flex flex-wrap items-center justify-center gap-1.5">
+          <FiltersButton params={params} facets={facets} update={update} />
+          <span className="h-3 w-px bg-hairline-strong" />
+          <span className="label-mono tabular px-1.5 text-muted-foreground">
             {data.total.toLocaleString()} {data.total === 1 ? "result" : "results"}
           </span>
           <span className="h-3 w-px bg-hairline-strong" />
           <DropdownMenu>
-            <DropdownMenuTrigger className="label-mono rounded-md px-1.5 py-1 transition-colors hover:bg-raised hover:text-foreground">
+            <DropdownMenuTrigger className="label-mono rounded-md px-2 py-1 transition-colors hover:bg-raised hover:text-foreground">
               Sort / {SORT_LABELS[effectiveSort]}
             </DropdownMenuTrigger>
             <DropdownMenuContent>
@@ -287,15 +307,19 @@ export function Library({
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
+          <span className="h-3 w-px bg-hairline-strong" />
+          <ZoomControl zoom={zoom} onChange={setZoom} />
           {data.fuzzy && (
             <>
               <span className="h-3 w-px bg-hairline-strong" />
-              <span className="label-mono text-brand">Showing close matches</span>
+              <span className="label-mono px-1.5 text-brand">Close matches</span>
             </>
           )}
         </div>
         <span className="h-px flex-1 bg-hairline" />
       </div>
+
+      <ActiveFilters params={params} facets={facets} update={update} />
 
       {data.items.length === 0 && !loading ? (
         <div className="flex flex-col items-center gap-3 py-24 text-center">
@@ -304,19 +328,16 @@ export function Library({
           <p className="max-w-sm text-sm text-muted-foreground">
             {hasQueryOrFilters
               ? "Try fewer words or clear a filter."
-              : "Run a sync from the Trove Sync extension and your X bookmarks will show up here."}
+              : "Run a sync from the extension and your X bookmarks will show up here."}
           </p>
         </div>
       ) : (
         <div
-          className={cn(
-            "card-grid grid w-full items-start gap-3 transition-opacity duration-200",
-            loading && "opacity-50",
-          )}
+          className={cn("card-grid grid w-full items-start transition-opacity duration-200", compact ? "gap-2" : "gap-3", loading && "opacity-50")}
           style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
         >
           {columns.map((col, ci) => (
-            <div key={ci} className="flex min-w-0 flex-col gap-3">
+            <div key={ci} className={cn("flex min-w-0 flex-col", compact ? "gap-2" : "gap-3")}>
               {col.map(({ item, index }) => (
                 <BookmarkCard
                   key={item.tweetId}
@@ -325,6 +346,7 @@ export function Library({
                   }}
                   item={item}
                   index={index}
+                  compact={compact}
                   allTags={allTags}
                   focused={focusIndex === index}
                   onFocus={() => setFocusIndex(index)}
@@ -347,6 +369,25 @@ export function Library({
       </div>
 
       <ShortcutsDialog open={showShortcuts} onOpenChange={setShowShortcuts} />
+    </div>
+  );
+}
+
+function ZoomControl({ zoom, onChange }: { zoom: number; onChange: (z: number) => void }) {
+  const btn = "inline-flex size-6 items-center justify-center rounded-md text-faint transition-colors hover:bg-raised hover:text-foreground disabled:opacity-30 disabled:hover:bg-transparent";
+  return (
+    <div className="flex items-center gap-0.5" role="group" aria-label="Card size">
+      <button type="button" className={btn} disabled={zoom >= ZOOM_LEVELS - 1} onClick={() => onChange(zoom + 1)} aria-label="Zoom out (-)" title="Zoom out (-)">
+        <Minus className="size-3" />
+      </button>
+      <span className="flex items-center gap-[3px] px-1" aria-hidden>
+        {Array.from({ length: ZOOM_LEVELS }, (_, i) => (
+          <span key={i} className={cn("h-2.5 w-[3px] rounded-full transition-colors", i <= zoom ? "bg-brand" : "bg-hairline-strong")} />
+        ))}
+      </span>
+      <button type="button" className={btn} disabled={zoom <= 0} onClick={() => onChange(zoom - 1)} aria-label="Zoom in (=)" title="Zoom in (=)">
+        <Plus className="size-3" />
+      </button>
     </div>
   );
 }

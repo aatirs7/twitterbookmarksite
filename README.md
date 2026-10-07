@@ -1,9 +1,9 @@
-# Trove
+# XBookmarkVault
 
 Searchable, auto-tagged library of your X bookmarks. Two parts:
 
-- **Trove Web** (this Next.js app): stores, indexes, tags and displays bookmarks.
-- **Trove Sync** (`/extension`): an MV3 Chrome extension that reads bookmarks through your logged-in X session and sends them to Trove Web.
+- **Web app** (this Next.js app): stores, indexes, tags and displays bookmarks.
+- **Extension** (`/extension`): an MV3 Chrome extension that reads bookmarks through your logged-in X session and sends them to the web app.
 
 ## Setup
 
