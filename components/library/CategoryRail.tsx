@@ -13,9 +13,11 @@ export function CategoryRail({
   selected: string[];
   onSelect: (slug: string | null) => void;
 }) {
-  const shown = categories.filter((c) => c.count > 0);
+  // Largest first, with the catch-all "Other" always last.
+  const shown = categories
+    .filter((c) => c.count > 0)
+    .sort((a, b) => Number(a.value === "other") - Number(b.value === "other") || b.count - a.count);
   if (shown.length === 0) return null;
-  const total = shown.reduce((n, c) => n + c.count, 0);
   return (
     <div className="flex w-full flex-col items-center gap-3">
       <span className="label-mono">Browse by category</span>
@@ -29,7 +31,6 @@ export function CategoryRail({
           )}
         >
           All
-          <span className="label-mono tabular">{total.toLocaleString()}</span>
         </button>
         {shown.map((c) => {
           const on = selected.includes(c.value);

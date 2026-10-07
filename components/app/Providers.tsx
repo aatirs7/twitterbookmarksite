@@ -7,7 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
-      <TooltipProvider>
+      <TooltipProvider delay={350} closeDelay={0}>
         {children}
         <Toaster position="bottom-center" />
       </TooltipProvider>
