@@ -277,7 +277,12 @@ export function Library({
             <kbd className="well absolute top-1/2 right-4 hidden -translate-y-1/2 rounded-md px-1.5 py-0.5 font-mono text-[11px] text-faint sm:block">/</kbd>
           )}
           {/* Operator hints only while typing, so the page stays calm. */}
-          <p className="label-mono pointer-events-none absolute inset-x-0 top-full mt-2 hidden text-center opacity-0 transition-opacity duration-200 group-focus-within:opacity-100 sm:block">
+          <p
+            className={cn(
+              "label-mono pointer-events-none absolute inset-x-0 top-full mt-2 hidden text-center opacity-0 transition-opacity duration-200 sm:block",
+              query && "group-focus-within:opacity-100",
+            )}
+          >
             from:handle &nbsp; has:video &nbsp; site:github.com &nbsp; &quot;exact phrase&quot; &nbsp; -exclude
           </p>
         </div>
