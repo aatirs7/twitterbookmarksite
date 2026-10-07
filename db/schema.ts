@@ -218,6 +218,14 @@ export const syncRuns = pgTable(
   (t) => [index("sync_runs_user_started_idx").on(t.userId, t.startedAt.desc())],
 );
 
+/** Per-user settings. Secrets are stored encrypted (AES-256-GCM, see lib/crypto.ts). */
+export const userSettings = pgTable("user_settings", {
+  userId: text("user_id").primaryKey(),
+  anthropicKeyEnc: text("anthropic_key_enc"),
+  anthropicKeyHint: text("anthropic_key_hint"),
+  updatedAt: ts("updated_at").notNull().defaultNow(),
+});
+
 export type Tweet = typeof tweets.$inferSelect;
 export type Bookmark = typeof bookmarks.$inferSelect;
 export type Media = typeof media.$inferSelect;

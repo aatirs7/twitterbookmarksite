@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { db } from "@/db";
 import { bookmarkTags, bookmarks, importTokens, tags } from "@/db/schema";
+import Anthropic from "@anthropic-ai/sdk";
+import { saveAnthropicKey } from "@/lib/ai/apiKey";
 import { tagBookmarks } from "@/lib/ai/tagBookmarks";
 import { createImportToken } from "@/lib/auth/importToken";
 import { requireUser } from "@/lib/auth/user";
@@ -128,10 +130,34 @@ export async function retagAllAction() {
   });
   after(async () => {
     try {
-      await tagBookmarks(userId, 200);
+      // Keyword rules finish instantly; Claude works through as many as fit, and the hourly job does the rest.
+      await tagBookmarks(userId, 100_000, Date.now() + 270_000);
     } catch (err) {
       console.error("[retag] failed", err);
     }
   });
+  revalidatePath("/settings");
+}
+
+/** Checks the key against the Anthropic API, then stores it encrypted. */
+export async function saveAnthropicKeyAction(raw: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  const userId = await requireUser();
+  const key = raw.trim();
+  if (!/^sk-ant-[A-Za-z0-9_-]{20,}$/.test(key)) return { ok: false, error: "That does not look like an Anthropic API key (sk-ant-...)." };
+  try {
+    await new Anthropic({ apiKey: key, maxRetries: 0, timeout: 15_000 }).models.retrieve("claude-haiku-4-5");
+  } catch (err) {
+    if (err instanceof Anthropic.AuthenticationError) return { ok: false, error: "Anthropic rejected this key." };
+    if (err instanceof Anthropic.PermissionDeniedError) return { ok: false, error: "This key cannot use Claude Haiku 4.5." };
+    if (!(err instanceof Anthropic.APIError)) return { ok: false, error: "Could not reach Anthropic to check the key. Try again." };
+  }
+  await saveAnthropicKey(userId, key);
+  revalidatePath("/settings");
+  return { ok: true };
+}
+
+export async function removeAnthropicKeyAction() {
+  const userId = await requireUser();
+  await saveAnthropicKey(userId, null);
   revalidatePath("/settings");
 }

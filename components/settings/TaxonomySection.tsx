@@ -1,19 +1,13 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { ChevronDown, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  acceptTagAction,
-  createTagAction,
-  deleteTagAction,
-  mergeTagsAction,
-  retagAllAction,
-  updateTagAction,
-} from "@/app/(app)/settings/actions";
+import { acceptTagAction, createTagAction, deleteTagAction, mergeTagsAction, updateTagAction } from "@/app/(app)/settings/actions";
 import { TAG_PALETTE } from "@/lib/tags/palette";
 import { cn } from "@/lib/utils";
 
@@ -42,162 +36,166 @@ function useAction() {
   return { pending, run };
 }
 
-function TagCard({ tag, all }: { tag: TagRow; all: TagRow[] }) {
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="flex w-full flex-col items-center gap-1">
+      <span className="label-mono">{label}</span>
+      {children}
+    </label>
+  );
+}
+
+function CategoryRow({ tag, all }: { tag: TagRow; all: TagRow[] }) {
+  const [open, setOpen] = useState(false);
   const [name, setName] = useState(tag.name);
   const [description, setDescription] = useState(tag.description ?? "");
   const [keywords, setKeywords] = useState(tag.keywords ?? "");
   const [mergeInto, setMergeInto] = useState("");
   const { pending, run } = useAction();
   const dirty = name !== tag.name || description !== (tag.description ?? "") || keywords !== (tag.keywords ?? "");
+  const color = tag.color ?? "#9AA7B8";
 
   return (
-    <div className={cn("well flex flex-col items-center gap-2 rounded-xl p-4", tag.createdBy === "ai" && "ring-1 ring-brand/50")}>
-      <div className="flex items-center gap-2">
-        <Popover>
-          <PopoverTrigger className="size-4 rounded-full ring-2 ring-border" style={{ backgroundColor: tag.color ?? "#9AA7B8" }} aria-label="Change color" />
-          <PopoverContent className="w-auto">
-            <div className="grid grid-cols-5 gap-2">
-              {TAG_PALETTE.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  aria-label={c}
-                  onClick={() => run(() => updateTagAction(tag.id, { color: c }))}
-                  className={cn("size-6 rounded-full", c === tag.color && "ring-2 ring-foreground/60")}
-                  style={{ backgroundColor: c }}
-                />
-              ))}
-            </div>
-          </PopoverContent>
-        </Popover>
-        <span className="label-mono tabular">{tag.count.toLocaleString()} bookmarks</span>
-      </div>
-      {tag.createdBy === "ai" && <span className="label-mono text-brand">Proposed by AI</span>}
-      <Input value={name} onChange={(e) => setName(e.target.value)} className="text-center font-medium" aria-label="Tag name" />
-      <Textarea
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        rows={2}
-        placeholder="Description for the AI tagger"
-        className="text-center text-xs"
-      />
-      <Textarea
-        value={keywords}
-        onChange={(e) => setKeywords(e.target.value)}
-        rows={3}
-        placeholder="Keywords: free, &quot;promo code&quot;, figma.com, @handle"
-        className="text-center font-mono text-[11px]"
-        aria-label="Keywords"
-      />
-      <div className="flex flex-wrap justify-center gap-1">
-        {dirty && (
-          <Button size="sm" disabled={pending} onClick={() => run(() => updateTagAction(tag.id, { name, description, keywords }), "Saved")}>
-            Save
-          </Button>
-        )}
-        {tag.createdBy === "ai" && (
-          <Button size="sm" variant="secondary" disabled={pending} onClick={() => run(() => acceptTagAction(tag.id), "Accepted")}>
-            Accept
-          </Button>
-        )}
-        <Popover>
-          <PopoverTrigger className="inline-flex h-7 items-center rounded-lg px-2.5 text-[0.8rem] text-muted-foreground hover:bg-raised hover:text-foreground">
-            Merge
-          </PopoverTrigger>
-          <PopoverContent className="items-center text-center">
-            <p className="text-xs text-muted-foreground">Move every bookmark tagged {tag.name} into:</p>
-            <select
-              value={mergeInto}
-              onChange={(e) => setMergeInto(e.target.value)}
-              className="h-8 w-full rounded-lg border border-border bg-surface px-2 text-center text-sm"
-            >
-              <option value="">Choose a tag</option>
-              {all
-                .filter((t) => t.id !== tag.id)
-                .map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.name}
-                  </option>
-                ))}
-            </select>
-            <Button size="sm" disabled={!mergeInto || pending} onClick={() => run(() => mergeTagsAction(tag.id, mergeInto), "Merged")}>
-              Merge
+    <div className="border-b border-hairline last:border-b-0">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="flex w-full items-center justify-center gap-2.5 px-4 py-3 transition-colors hover:bg-raised/50"
+      >
+        <span className="size-2 rounded-full" style={{ backgroundColor: color }} />
+        <span className="text-[14px]">{tag.name}</span>
+        <span className="font-mono text-[11px] text-faint tabular">{tag.count.toLocaleString()}</span>
+        {tag.createdBy === "ai" && <span className="label-mono text-brand">New, review</span>}
+        <ChevronDown className={cn("size-3.5 text-faint transition-transform", open && "rotate-180")} />
+      </button>
+
+      {open && (
+        <div className="flex flex-col items-center gap-3 px-4 pb-5">
+          <div className="flex flex-wrap items-center justify-center gap-1.5">
+            {TAG_PALETTE.map((c) => (
+              <button
+                key={c}
+                type="button"
+                aria-label={`Color ${c}`}
+                onClick={() => run(() => updateTagAction(tag.id, { color: c }))}
+                className={cn("size-5 rounded-full transition-transform hover:scale-110", c === tag.color && "ring-2 ring-foreground/50 ring-offset-2")}
+                style={{ backgroundColor: c }}
+              />
+            ))}
+          </div>
+          <div className="grid w-full max-w-lg gap-3">
+            <Field label="Name">
+              <Input value={name} onChange={(e) => setName(e.target.value)} className="h-9 text-center" />
+            </Field>
+            <Field label="Keywords (free sorting)">
+              <Textarea
+                value={keywords}
+                onChange={(e) => setKeywords(e.target.value)}
+                rows={3}
+                placeholder='free, "promo code", figma.com, @handle'
+                className="text-center font-mono text-[11.5px]"
+              />
+            </Field>
+            <Field label="Description (Claude sorting)">
+              <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} className="text-center text-[13px]" />
+            </Field>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-1">
+            <Button size="sm" disabled={!dirty || pending} onClick={() => run(() => updateTagAction(tag.id, { name, description, keywords }), "Saved")}>
+              Save
             </Button>
-          </PopoverContent>
-        </Popover>
-        <Popover>
-          <PopoverTrigger className="inline-flex h-7 items-center rounded-lg px-2.5 text-[0.8rem] text-destructive hover:bg-raised">
-            Delete
-          </PopoverTrigger>
-          <PopoverContent className="items-center text-center">
-            <p className="text-xs">Delete {tag.name} from {tag.count} bookmarks?</p>
-            <Button size="sm" variant="destructive" disabled={pending} onClick={() => run(() => deleteTagAction(tag.id), "Deleted")}>
-              Delete tag
-            </Button>
-          </PopoverContent>
-        </Popover>
-      </div>
+            {tag.createdBy === "ai" && (
+              <Button size="sm" variant="secondary" disabled={pending} onClick={() => run(() => acceptTagAction(tag.id), "Kept")}>
+                Keep it
+              </Button>
+            )}
+            <Popover>
+              <PopoverTrigger className="inline-flex h-7 items-center rounded-lg px-2.5 text-[0.8rem] text-muted-foreground hover:bg-raised hover:text-foreground">
+                Merge into...
+              </PopoverTrigger>
+              <PopoverContent className="items-center text-center">
+                <p className="text-xs text-muted-foreground">Move every bookmark in {tag.name} into:</p>
+                <select
+                  value={mergeInto}
+                  onChange={(e) => setMergeInto(e.target.value)}
+                  className="well h-8 w-full rounded-lg px-2 text-center text-sm"
+                >
+                  <option value="">Choose a category</option>
+                  {all
+                    .filter((t) => t.id !== tag.id)
+                    .map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.name}
+                      </option>
+                    ))}
+                </select>
+                <Button size="sm" disabled={!mergeInto || pending} onClick={() => run(() => mergeTagsAction(tag.id, mergeInto), "Merged")}>
+                  Merge
+                </Button>
+              </PopoverContent>
+            </Popover>
+            <Popover>
+              <PopoverTrigger className="inline-flex h-7 items-center rounded-lg px-2.5 text-[0.8rem] text-destructive hover:bg-raised">Delete</PopoverTrigger>
+              <PopoverContent className="items-center text-center">
+                <p className="text-xs">
+                  Delete {tag.name}? Its {tag.count} bookmarks stay, they just lose this category.
+                </p>
+                <Button size="sm" variant="destructive" disabled={pending} onClick={() => run(() => deleteTagAction(tag.id), "Deleted")}>
+                  Delete category
+                </Button>
+              </PopoverContent>
+            </Popover>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 export function TaxonomySection({ tags }: { tags: TagRow[] }) {
   const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
+  const [keywords, setKeywords] = useState("");
   const { pending, run } = useAction();
-  const proposed = tags.filter((t) => t.createdBy === "ai");
-  const rest = tags.filter((t) => t.createdBy !== "ai");
+  // Proposed categories first so they get reviewed, then largest first.
+  const sorted = [...tags].sort((a, b) => Number(b.createdBy === "ai") - Number(a.createdBy === "ai") || b.count - a.count);
 
   return (
-    <div className="flex w-full flex-col items-center gap-5">
-      <div className="flex flex-wrap justify-center gap-2">
-        <Popover>
-          <PopoverTrigger className="inline-flex h-8 items-center rounded-lg border border-border px-3 text-sm hover:bg-raised">New tag</PopoverTrigger>
-          <PopoverContent className="items-center text-center">
-            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Name" className="text-center" />
-            <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} placeholder="Description" className="text-center" />
-            <Button
-              size="sm"
-              disabled={!name.trim() || pending}
-              onClick={() =>
-                run(async () => {
-                  await createTagAction(name, description);
-                  setName("");
-                  setDescription("");
-                }, "Tag created")
-              }
-            >
-              Create
-            </Button>
-          </PopoverContent>
-        </Popover>
-        <Popover>
-          <PopoverTrigger className="inline-flex h-8 items-center rounded-lg border border-border px-3 text-sm hover:bg-raised">Recategorize all</PopoverTrigger>
-          <PopoverContent className="items-center text-center">
-            <p className="text-xs">Clear automatic categories and sort everything again with the current keywords. Categories you added by hand stay.</p>
-            <Button size="sm" disabled={pending} onClick={() => run(() => retagAllAction(), "Recategorizing")}>
-              Recategorize everything
-            </Button>
-          </PopoverContent>
-        </Popover>
-      </div>
-
-      {proposed.length > 0 && (
-        <div className="flex w-full flex-col items-center gap-3">
-          <h3 className="label-mono text-brand">Waiting for review</h3>
-          <div className="grid w-full gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {proposed.map((t) => (
-              <TagCard key={`${t.id}-${t.name}-${t.description}-${t.keywords}`} tag={t} all={tags} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="grid w-full gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {rest.map((t) => (
-          <TagCard key={`${t.id}-${t.name}-${t.description}-${t.keywords}`} tag={t} all={tags} />
+    <div className="flex w-full flex-col items-center gap-4">
+      <div className="etched w-full max-w-2xl overflow-hidden rounded-2xl">
+        {sorted.map((t) => (
+          <CategoryRow key={`${t.id}-${t.name}-${t.description}-${t.keywords}-${t.color}`} tag={t} all={tags} />
         ))}
       </div>
+
+      <Popover>
+        <PopoverTrigger className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-hairline px-3 text-[13px] text-muted-foreground hover:bg-raised hover:text-foreground">
+          <Plus className="size-3.5" /> New category
+        </PopoverTrigger>
+        <PopoverContent className="w-80 items-center text-center">
+          <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Name" className="text-center" />
+          <Textarea
+            value={keywords}
+            onChange={(e) => setKeywords(e.target.value)}
+            rows={3}
+            placeholder='Keywords: recipe, cooking, "meal prep"'
+            className="text-center font-mono text-[11.5px]"
+          />
+          <Button
+            size="sm"
+            disabled={!name.trim() || pending}
+            onClick={() =>
+              run(async () => {
+                await createTagAction(name, "", keywords);
+                setName("");
+                setKeywords("");
+              }, "Category created. Recategorize to apply it to older bookmarks.")
+            }
+          >
+            Create
+          </Button>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 }
