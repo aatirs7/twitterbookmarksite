@@ -50,3 +50,6 @@ extension/node_modules
 public/trove-sync.zip
 
 .vercel
+
+# local scratch scripts
+scripts/*.tmp.*
