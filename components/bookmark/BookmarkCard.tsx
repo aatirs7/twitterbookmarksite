@@ -88,14 +88,17 @@ export const BookmarkCard = forwardRef<HTMLElement, Props>(function BookmarkCard
   const long = tweet.text.length > 420 || tweet.text.split("\n").length > 8;
 
   return (
+    // The slot never moves, so lifting the card cannot pull it out from under the pointer.
+    <div className="card-slot group/card">
     <article
       ref={ref}
       tabIndex={0}
       onFocus={onFocus}
       data-tweet-id={item.tweetId}
       className={cn(
-        "etched group relative flex flex-col overflow-hidden rounded-2xl text-center outline-none transition-[border-color,transform,opacity,filter,box-shadow] duration-300 ease-out",
-        "hover:-translate-y-1 hover:border-brand/45 hover:shadow-[inset_0_1px_0_0_var(--highlight),0_18px_40px_-16px_rgb(15_17_21/0.35),0_0_0_4px_var(--mark)] focus-visible:border-brand/60 motion-reduce:hover:translate-y-0",
+        "etched group relative flex flex-col overflow-hidden rounded-2xl text-center outline-none transition-[border-color,transform,box-shadow] duration-300 ease-out",
+        "group-hover/card:-translate-y-1 group-hover/card:border-brand/45 group-hover/card:shadow-[inset_0_1px_0_0_var(--highlight),0_18px_40px_-16px_rgb(15_17_21/0.35),0_0_0_4px_var(--mark)]",
+        "focus-visible:border-brand/60 motion-reduce:group-hover/card:translate-y-0",
         focused && "border-brand/60",
         item.removedAt && "opacity-70",
       )}
@@ -228,6 +231,7 @@ export const BookmarkCard = forwardRef<HTMLElement, Props>(function BookmarkCard
         </DialogContent>
       </Dialog>
     </article>
+    </div>
   );
 });
 

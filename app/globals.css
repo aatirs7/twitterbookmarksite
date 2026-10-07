@@ -200,3 +200,15 @@
     animation: none;
   }
 }
+
+/* Hover focus for the card grid. The whole grid is the hover area, so crossing the gap between
+   two cards does not flash everything back to full strength. Un-dimming waits a beat. */
+@media (hover: hover) and (pointer: fine) {
+  .card-grid .card-slot {
+    transition: opacity 280ms ease 90ms;
+  }
+  .card-grid:hover .card-slot:not(:hover) {
+    opacity: 0.42;
+    transition-delay: 0ms;
+  }
+}
