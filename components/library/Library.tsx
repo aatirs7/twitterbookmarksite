@@ -388,7 +388,7 @@ function ZoomControl({ zoom, onChange }: { zoom: number; onChange: (z: number) =
       </button>
       <span className="flex items-center gap-[3px] px-1" aria-hidden>
         {Array.from({ length: ZOOM_LEVELS }, (_, i) => (
-          <span key={i} className={cn("h-2.5 w-[3px] rounded-full transition-colors", i <= zoom ? "bg-brand" : "bg-hairline-strong")} />
+          <span key={i} className={cn("h-2.5 w-[3px] rounded-full transition-colors", i < ZOOM_LEVELS - zoom ? "bg-brand" : "bg-hairline-strong")} />
         ))}
       </span>
       <button type="button" className={btn} disabled={zoom <= 0} onClick={() => onChange(zoom - 1)} aria-label="Zoom in (=)" title="Zoom in (=)">
