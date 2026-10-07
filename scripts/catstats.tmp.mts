@@ -1,0 +1,10 @@
+import { config } from "dotenv";
+config({ path: ".env.local", quiet: true });
+const { Pool, neonConfig } = await import("@neondatabase/serverless");
+neonConfig.webSocketConstructor = (await import("ws")).default;
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const r = await pool.query(`select tg.name, count(bt.tweet_id)::int n from tags tg left join bookmark_tags bt on bt.tag_id = tg.id group by tg.name order by n desc`);
+console.log(r.rows.map((x) => `${String(x.n).padStart(4)}  ${x.name}`).join("\n"));
+const s = await pool.query(`select t.text, string_agg(tg.slug, ',') cats from bookmark_tags bt join tweets t on t.id = bt.tweet_id join tags tg on tg.id = bt.tag_id group by t.id, t.text order by random() limit 12`);
+console.log(s.rows.map((x) => `[${x.cats}] ${x.text.replace(/\s+/g, " ").slice(0, 110)}`).join("\n"));
+await pool.end();

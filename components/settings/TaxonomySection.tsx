@@ -22,6 +22,7 @@ interface TagRow {
   slug: string;
   name: string;
   description: string | null;
+  keywords: string | null;
   color: string | null;
   count: number;
   createdBy: string;
@@ -44,9 +45,10 @@ function useAction() {
 function TagCard({ tag, all }: { tag: TagRow; all: TagRow[] }) {
   const [name, setName] = useState(tag.name);
   const [description, setDescription] = useState(tag.description ?? "");
+  const [keywords, setKeywords] = useState(tag.keywords ?? "");
   const [mergeInto, setMergeInto] = useState("");
   const { pending, run } = useAction();
-  const dirty = name !== tag.name || description !== (tag.description ?? "");
+  const dirty = name !== tag.name || description !== (tag.description ?? "") || keywords !== (tag.keywords ?? "");
 
   return (
     <div className={cn("well flex flex-col items-center gap-2 rounded-xl p-4", tag.createdBy === "ai" && "ring-1 ring-brand/50")}>
@@ -79,9 +81,17 @@ function TagCard({ tag, all }: { tag: TagRow; all: TagRow[] }) {
         placeholder="Description for the AI tagger"
         className="text-center text-xs"
       />
+      <Textarea
+        value={keywords}
+        onChange={(e) => setKeywords(e.target.value)}
+        rows={3}
+        placeholder="Keywords: free, &quot;promo code&quot;, figma.com, @handle"
+        className="text-center font-mono text-[11px]"
+        aria-label="Keywords"
+      />
       <div className="flex flex-wrap justify-center gap-1">
         {dirty && (
-          <Button size="sm" disabled={pending} onClick={() => run(() => updateTagAction(tag.id, { name, description }), "Saved")}>
+          <Button size="sm" disabled={pending} onClick={() => run(() => updateTagAction(tag.id, { name, description, keywords }), "Saved")}>
             Save
           </Button>
         )}
@@ -162,11 +172,11 @@ export function TaxonomySection({ tags }: { tags: TagRow[] }) {
           </PopoverContent>
         </Popover>
         <Popover>
-          <PopoverTrigger className="inline-flex h-8 items-center rounded-lg border border-border px-3 text-sm hover:bg-raised">Retag all</PopoverTrigger>
+          <PopoverTrigger className="inline-flex h-8 items-center rounded-lg border border-border px-3 text-sm hover:bg-raised">Recategorize all</PopoverTrigger>
           <PopoverContent className="items-center text-center">
-            <p className="text-xs">Clear AI tags and summaries and run the tagger again. Tags you added stay.</p>
-            <Button size="sm" disabled={pending} onClick={() => run(() => retagAllAction(), "Retagging started")}>
-              Retag everything
+            <p className="text-xs">Clear automatic categories and sort everything again with the current keywords. Categories you added by hand stay.</p>
+            <Button size="sm" disabled={pending} onClick={() => run(() => retagAllAction(), "Recategorizing")}>
+              Recategorize everything
             </Button>
           </PopoverContent>
         </Popover>
@@ -177,7 +187,7 @@ export function TaxonomySection({ tags }: { tags: TagRow[] }) {
           <h3 className="label-mono text-brand">Waiting for review</h3>
           <div className="grid w-full gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {proposed.map((t) => (
-              <TagCard key={`${t.id}-${t.name}-${t.description}`} tag={t} all={tags} />
+              <TagCard key={`${t.id}-${t.name}-${t.description}-${t.keywords}`} tag={t} all={tags} />
             ))}
           </div>
         </div>
@@ -185,7 +195,7 @@ export function TaxonomySection({ tags }: { tags: TagRow[] }) {
 
       <div className="grid w-full gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {rest.map((t) => (
-          <TagCard key={`${t.id}-${t.name}-${t.description}`} tag={t} all={tags} />
+          <TagCard key={`${t.id}-${t.name}-${t.description}-${t.keywords}`} tag={t} all={tags} />
         ))}
       </div>
     </div>

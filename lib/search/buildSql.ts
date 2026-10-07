@@ -1,8 +1,10 @@
 import "server-only";
-import { sql, type SQL } from "drizzle-orm";
+import { eq, sql, type SQL } from "drizzle-orm";
 import { db } from "@/db";
+import { tags } from "@/db/schema";
 import { hydrateBookmarks, type BaseRow } from "@/lib/bookmarks/hydrate";
 import { HL_END, HL_START, type Facet, type SearchResponse } from "@/lib/bookmarks/types";
+import { buildLooseTsQuery, expandQuery } from "./expand";
 import { buildExcludeTsQuery, buildTsQuery, parseQuery, type MediaFilter } from "./parseQuery";
 
 export type SortMode = "relevance" | "newest" | "oldest" | "likes";
@@ -121,8 +123,26 @@ export async function searchBookmarks(userId: string, params: SearchParams): Pro
   if (params.link || parsed.has.link) base.push({ dim: "other", sql: sql`t.has_link` });
   if (exq) base.push({ dim: "other", sql: sql`not (b.search_tsv @@ to_tsquery('simple', ${exq}))` });
 
-  const textCond: SQL | null = tsq
+  // Exact match, plus a loose match that tolerates typos and related concepts, plus category concepts.
+  const categoryRules = tsq
+    ? await db.select({ slug: tags.slug, name: tags.name, keywords: tags.keywords }).from(tags).where(eq(tags.userId, userId))
+    : [];
+  const expansion = tsq
+    ? await expandQuery(userId, parsed, categoryRules)
+    : { alternatives: new Map<string, string[]>(), typos: new Map<string, string[]>(), categories: [] };
+  const looseq = tsq ? buildLooseTsQuery(parsed, expansion.alternatives) : null;
+  const typoq = tsq ? buildLooseTsQuery(parsed, expansion.typos) : null;
+  const catList = expansion.categories;
+
+  const exactCond: SQL | null = tsq
     ? sql`(b.search_tsv @@ to_tsquery('simple', ${tsq}) or b.search_en @@ to_tsquery('english', ${tsq}))`
+    : null;
+  const catCond: SQL | null = catList.length
+    ? sql`exists (select 1 from bookmark_tags bt join tags tg on tg.id = bt.tag_id
+         where bt.user_id = b.user_id and bt.tweet_id = b.tweet_id and tg.slug in (${inList(catList)}))`
+    : null;
+  const textCond: SQL | null = tsq
+    ? sql`(${exactCond} or b.search_tsv @@ to_tsquery('simple', ${looseq}) or b.search_en @@ to_tsquery('english', ${looseq})${catCond ? sql` or ${catCond}` : sql``})`
     : null;
   const fuzzyText = parsed.freeText;
   const fuzzyCond: SQL | null = fuzzyText ? sql`word_similarity(${fuzzyText}, b.search_text) >= 0.45` : null;
@@ -134,8 +154,16 @@ export async function searchBookmarks(userId: string, params: SearchParams): Pro
   };
 
   const sort: SortMode = params.sort ?? (tsq ? "relevance" : "newest");
+  // Exact hits dominate, loose (typo and synonym) hits come next, category-only hits last.
   const rank = tsq
-    ? sql`(ts_rank_cd(b.search_tsv, to_tsquery('simple', ${tsq}), 32) + 0.5 * ts_rank_cd(b.search_en, to_tsquery('english', ${tsq}), 32))`
+    ? sql`(
+        4 * ts_rank_cd(b.search_tsv, to_tsquery('simple', ${tsq}), 32)
+        + 2 * ts_rank_cd(b.search_en, to_tsquery('english', ${tsq}), 32)
+        + 2 * ts_rank_cd(b.search_tsv, to_tsquery('simple', ${typoq}), 32)
+        + ts_rank_cd(b.search_tsv, to_tsquery('simple', ${looseq}), 32)
+        + 0.5 * ts_rank_cd(b.search_en, to_tsquery('english', ${looseq}), 32)
+        + ${catCond ? sql`case when ${catCond} then 0.02 else 0 end` : sql`0`}
+      )`
     : sql`0`;
 
   const runItems = async (text: SQL | null, fuzzy: boolean) => {
@@ -149,8 +177,8 @@ export async function searchBookmarks(userId: string, params: SearchParams): Pro
             : sort === "relevance" && tsq
               ? sql`${rank} desc, b.sort_key desc nulls last`
               : sql`b.sort_key desc nulls last, b.first_seen_at desc`;
-    const headline = tsq
-      ? sql`ts_headline('simple', t.text, to_tsquery('simple', ${tsq}), ${`StartSel=${HL_START}, StopSel=${HL_END}, HighlightAll=true`})`
+    const headline = looseq
+      ? sql`ts_headline('simple', t.text, to_tsquery('simple', ${looseq}), ${`StartSel=${HL_START}, StopSel=${HL_END}, HighlightAll=true`})`
       : sql`null`;
     const res = await db.execute(sql`
       select b.tweet_id, b.sort_key, b.first_seen_at, b.removed_at, b.note, b.pinned, b.ai_summary, ${headline} as headline
@@ -171,12 +199,18 @@ export async function searchBookmarks(userId: string, params: SearchParams): Pro
 
   let fuzzy = false;
   let text = textCond;
-  let [rows, total] = await Promise.all([runItems(text, false), countFor(text)]);
+  let [rows, total, exactTotal] = await Promise.all([
+    runItems(text, false),
+    countFor(text),
+    exactCond && offset === 0 ? countFor(exactCond) : Promise.resolve(1),
+  ]);
   if (total === 0 && textCond && fuzzyCond) {
-    fuzzy = true;
     text = fuzzyCond;
     [rows, total] = await Promise.all([runItems(text, true), countFor(text)]);
+    exactTotal = 0;
   }
+  // Tell the UI when nothing matched exactly and the results come from typo, concept or similarity matching.
+  fuzzy = !!tsq && exactTotal === 0 && total > 0;
 
   const facets = await loadFacets(base, text, where);
   const hasMore = rows.length > limit;

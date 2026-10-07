@@ -41,7 +41,7 @@ async function ownedTag(userId: string, id: string) {
   return tag;
 }
 
-export async function updateTagAction(id: string, patch: { name?: string; description?: string; color?: string }) {
+export async function updateTagAction(id: string, patch: { name?: string; description?: string; keywords?: string; color?: string }) {
   const userId = await requireUser();
   const tag = await ownedTag(userId, id);
   const set: Partial<typeof tags.$inferInsert> = {};
@@ -53,6 +53,7 @@ export async function updateTagAction(id: string, patch: { name?: string; descri
     set.slug = slug;
   }
   if (patch.description !== undefined) set.description = patch.description.trim().slice(0, 300) || null;
+  if (patch.keywords !== undefined) set.keywords = patch.keywords.trim().slice(0, 4000) || null;
   if (patch.color !== undefined && (TAG_PALETTE as readonly string[]).includes(patch.color)) set.color = patch.color;
   if (Object.keys(set).length === 0) return;
   await db.update(tags).set(set).where(eq(tags.id, tag.id));
@@ -63,13 +64,13 @@ export async function updateTagAction(id: string, patch: { name?: string; descri
   revalidatePath("/settings");
 }
 
-export async function createTagAction(name: string, description: string) {
+export async function createTagAction(name: string, description: string, keywords = "") {
   const userId = await requireUser();
   const slug = slugify(name);
   if (!slug) throw new Error("Name required");
   await db
     .insert(tags)
-    .values({ userId, slug, name: name.trim().slice(0, 48), description: description.trim() || null, color: colorForSlug(slug), createdBy: "user" })
+    .values({ userId, slug, name: name.trim().slice(0, 48), description: description.trim() || null, keywords: keywords.trim() || null, color: colorForSlug(slug), createdBy: "user" })
     .onConflictDoNothing();
   revalidatePath("/settings");
 }
@@ -118,7 +119,7 @@ export async function mergeTagsAction(fromId: string, intoId: string) {
   revalidatePath("/settings");
 }
 
-/** Clears AI tags and summaries so every bookmark is retagged; user tags stay. */
+/** Clears automatic categories so every bookmark is sorted again; categories added by hand stay. */
 export async function retagAllAction() {
   const userId = await requireUser();
   await db.transaction(async (tx) => {

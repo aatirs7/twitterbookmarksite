@@ -146,6 +146,8 @@ export const tags = pgTable(
     slug: text("slug").notNull(),
     name: text("name").notNull(),
     description: text("description"),
+    /** Comma separated rules for the free categorizer: words, "phrases", site.com, @handle. */
+    keywords: text("keywords"),
     color: text("color"),
     createdBy: text("created_by").notNull().default("system"),
     createdAt: ts("created_at").notNull().defaultNow(),

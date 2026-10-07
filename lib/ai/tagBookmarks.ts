@@ -6,6 +6,7 @@ import { bookmarkTagBlocks, bookmarkTags, bookmarks, links, media, tags, tweets 
 import { rebuildSearchDocs } from "@/lib/searchDoc";
 import { colorForSlug, slugify } from "@/lib/tags/palette";
 import { ensureSeedTags } from "@/lib/tags/seed";
+import { ruleTagBookmarks } from "@/lib/tags/ruleTagBookmarks";
 
 const MODEL = "claude-haiku-4-5";
 const BATCH = 20;
@@ -208,12 +209,14 @@ async function tagBatch(client: Anthropic, userId: string, ids: string[]) {
 }
 
 /**
- * Tags up to `limit` untagged active bookmarks for a user, oldest first, 20 per Claude call.
+ * Tags untagged active bookmarks for a user. With ANTHROPIC_API_KEY set, uses Claude (up to `limit`, 20 per call);
+ * otherwise the free keyword categorizer handles everything pending.
  * Stops early when `deadline` (epoch ms) passes. Returns the number processed.
  */
 export async function tagBookmarks(userId: string, limit: number, deadline?: number): Promise<number> {
-  if (!process.env.ANTHROPIC_API_KEY) return 0;
   await ensureSeedTags(userId);
+  // Without an API key, use the free keyword categorizer. It is cheap, so it takes everything pending.
+  if (!process.env.ANTHROPIC_API_KEY) return ruleTagBookmarks(userId, Infinity, deadline);
   const pending = await db
     .select({ tweetId: bookmarks.tweetId })
     .from(bookmarks)

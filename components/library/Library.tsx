@@ -309,7 +309,12 @@ export function Library({
         </div>
       ) : (
         <div
-          className={cn("grid w-full items-start gap-3 transition-opacity duration-200", loading && "opacity-50")}
+          className={cn(
+            "grid w-full items-start gap-3 transition-opacity duration-200",
+            // Hovering a card dims and desaturates the rest so it stands out.
+            "[&:has(article:hover)_article:not(:hover)]:opacity-40 [&:has(article:hover)_article:not(:hover)]:saturate-50",
+            loading && "opacity-50",
+          )}
           style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
         >
           {columns.map((col, ci) => (

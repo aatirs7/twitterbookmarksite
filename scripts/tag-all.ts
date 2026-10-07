@@ -4,10 +4,7 @@ import { config } from "dotenv";
 config({ path: ".env.local", quiet: true });
 
 async function main() {
-  if (!process.env.ANTHROPIC_API_KEY) {
-    console.error("ANTHROPIC_API_KEY is not set in .env.local");
-    process.exit(1);
-  }
+  console.log(process.env.ANTHROPIC_API_KEY ? "Using Claude" : "No ANTHROPIC_API_KEY: using free keyword rules");
   const { OWNER_ID } = await import("@/lib/auth/session");
   const { tagBookmarks } = await import("@/lib/ai/tagBookmarks");
   let total = 0;

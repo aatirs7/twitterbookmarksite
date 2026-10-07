@@ -103,8 +103,8 @@ export default async function SettingsPage() {
         )}
       </Section>
 
-      <Section index="4.4" title="Taxonomy" description="Tag descriptions guide the AI tagger. Tags the AI proposes wait here for review.">
-        <TaxonomySection tags={tags.map(({ id, value, label, description, color, count, createdBy }) => ({ id, slug: value, name: label, description, color: color ?? null, count, createdBy }))} />
+      <Section index="4.4" title="Categories" description="Bookmarks are sorted by each category's keywords for free. Add words, quoted phrases, site.com domains or @handles, separated by commas. With an Anthropic key set, Claude uses the descriptions instead.">
+        <TaxonomySection tags={tags.map(({ id, value, label, description, keywords, color, count, createdBy }) => ({ id, slug: value, name: label, description, keywords, color: color ?? null, count, createdBy }))} />
       </Section>
 
       <Section index="4.5" title="Import and export">

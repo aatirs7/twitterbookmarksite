@@ -1,8 +1,9 @@
 import "server-only";
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { db } from "@/db";
 import { tags } from "@/db/schema";
 import { colorForSlug, slugify } from "./palette";
+import { SEED_KEYWORDS } from "./seedKeywords";
 
 const SEED: [string, string][] = [
   ["AI and LLMs", "Artificial intelligence, large language models, ML research, prompting, AI products"],
@@ -33,6 +34,14 @@ export async function ensureSeedTags(userId: string) {
   if (seeded.has(userId)) return;
   const existing = await db.select({ id: tags.id }).from(tags).where(eq(tags.userId, userId)).limit(1);
   if (existing.length) {
+    // Backfill default keyword rules for system categories created before rules existed.
+    for (const [slug, keywords] of Object.entries(SEED_KEYWORDS)) {
+      if (!keywords) continue;
+      await db
+        .update(tags)
+        .set({ keywords })
+        .where(and(eq(tags.userId, userId), eq(tags.slug, slug), isNull(tags.keywords)));
+    }
     seeded.add(userId);
     return;
   }
@@ -41,7 +50,7 @@ export async function ensureSeedTags(userId: string) {
     .values(
       SEED.map(([name, description]) => {
         const slug = slugify(name);
-        return { userId, slug, name, description, color: colorForSlug(slug), createdBy: "system" };
+        return { userId, slug, name, description, keywords: SEED_KEYWORDS[slug] || null, color: colorForSlug(slug), createdBy: "system" };
       }),
     )
     .onConflictDoNothing();

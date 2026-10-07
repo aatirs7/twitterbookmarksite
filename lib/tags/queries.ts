@@ -6,6 +6,7 @@ import type { Facet } from "@/lib/bookmarks/types";
 export interface TagSummary extends Facet {
   id: string;
   description: string | null;
+  keywords: string | null;
   createdBy: string;
   avatars: string[];
 }
@@ -13,7 +14,7 @@ export interface TagSummary extends Facet {
 /** All of a user's tags with active bookmark counts and up to 3 recent author avatars. */
 export async function listUserTags(userId: string): Promise<TagSummary[]> {
   const res = await db.execute(sql`
-    select tg.id, tg.slug as value, tg.name as label, tg.color, tg.description, tg.created_by as "createdBy",
+    select tg.id, tg.slug as value, tg.name as label, tg.color, tg.description, tg.keywords, tg.created_by as "createdBy",
       count(b.tweet_id)::int as count,
       coalesce((
         select array_agg(distinct_avatars.url) from (

@@ -20,8 +20,8 @@ export async function GET(req: Request) {
   const deadline = Date.now() + BUDGET_MS;
   const report: Record<string, number> = {};
 
-  // 1. AI tagging for every user with untagged bookmarks.
-  if (process.env.ANTHROPIC_API_KEY) {
+  // 1. Categorize untagged bookmarks (Claude when a key is set, free keyword rules otherwise).
+  {
     const users = await db
       .selectDistinct({ userId: bookmarks.userId })
       .from(bookmarks)
