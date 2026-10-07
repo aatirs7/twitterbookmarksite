@@ -88,7 +88,8 @@ export function Library({
   }, []);
   useEffect(() => {
     try {
-      const saved = Number(localStorage.getItem(ZOOM_KEY));
+      const raw = localStorage.getItem(ZOOM_KEY);
+      const saved = raw === null ? NaN : Number(raw);
       // Restored after hydration on purpose: reading storage during render would mismatch the server HTML.
       // eslint-disable-next-line react-hooks/set-state-in-effect
       if (Number.isInteger(saved) && saved >= 0 && saved < ZOOM_LEVELS) setZoomState(saved);
