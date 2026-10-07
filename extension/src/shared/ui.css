@@ -1,70 +1,427 @@
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/jetbrains-mono";
+@import "@fontsource/instrument-serif";
+@import "@fontsource/instrument-serif/400-italic.css";
 @import "tailwindcss";
 
-/* Dark by default; light follows prefers-color-scheme. Only the design tokens below, no extreme neutrals. */
+/*
+ * Trove design language: private archive, etched hairlines.
+ * Dark is the default; light follows prefers-color-scheme. Only the tokens below, no extreme neutrals.
+ */
 :root {
   color-scheme: dark;
-  --t-bg: #0f1115;
-  --t-surface: #171a21;
-  --t-raised: #1e222b;
-  --t-border: #2a2f3a;
-  --t-text: #e8eaed;
+  --t-canvas: #0f1115;
+  --t-panel: #151820;
+  --t-well: #1b1f27;
+  --t-hairline: #252a33;
+  --t-hairline-strong: #2f3541;
+  --t-highlight: rgba(232, 234, 237, 0.05);
+  --t-ink: #e8eaed;
   --t-muted: #9aa0aa;
+  --t-faint: #6a707a;
   --t-accent: #7c9cff;
   --t-on-accent: #0f1115;
   --t-ok: #6fcf97;
   --t-warn: #e8b86b;
   --t-danger: #f08080;
+  --t-ring: rgba(124, 156, 255, 0.35);
+  --t-grid-dot: rgba(37, 42, 51, 0.9);
+  --t-drop: rgb(15 17 21 / 0.04);
+  --t-btn-shine: rgba(248, 247, 244, 0.18);
 }
 
 @media (prefers-color-scheme: light) {
   :root {
     color-scheme: light;
-    --t-bg: #f6f5f2;
-    --t-surface: #fbfaf8;
-    --t-raised: #efede8;
-    --t-border: #dcd8d0;
-    --t-text: #1a1c20;
-    --t-muted: #5f6670;
-    --t-accent: #4f6fd9;
-    --t-on-accent: #fbfaf8;
+    --t-canvas: #f3f2ee;
+    --t-panel: #f8f7f4;
+    --t-well: #eeede8;
+    --t-hairline: #e2e0da;
+    --t-hairline-strong: #d3d0c8;
+    --t-highlight: #fdfcfa;
+    --t-ink: #1a1c20;
+    --t-muted: #6b6f76;
+    --t-faint: #9a9da3;
+    --t-accent: #4f6fe0;
+    --t-on-accent: #f8f7f4;
     --t-ok: #2e8b57;
     --t-warn: #a8701c;
     --t-danger: #c0453f;
+    --t-ring: rgba(79, 111, 224, 0.35);
+    --t-grid-dot: rgba(211, 208, 200, 0.9);
   }
 }
 
 @theme {
-  /* Drop Tailwind's default palette so default colors cannot sneak in. */
+  /* Drop Tailwind's default palette and shadows so default colors cannot sneak in. */
   --color-*: initial;
-  --color-bg: var(--t-bg);
-  --color-surface: var(--t-surface);
-  --color-raised: var(--t-raised);
-  --color-line: var(--t-border);
-  --color-fg: var(--t-text);
+  --shadow-*: initial;
+  --inset-shadow-*: initial;
+  --drop-shadow-*: initial;
+  --text-shadow-*: initial;
+  --color-canvas: var(--t-canvas);
+  --color-panel: var(--t-panel);
+  --color-well: var(--t-well);
+  --color-line: var(--t-hairline);
+  --color-line-strong: var(--t-hairline-strong);
+  --color-fg: var(--t-ink);
   --color-muted: var(--t-muted);
+  --color-faint: var(--t-faint);
   --color-accent: var(--t-accent);
   --color-on-accent: var(--t-on-accent);
   --color-ok: var(--t-ok);
   --color-warn: var(--t-warn);
   --color-danger: var(--t-danger);
-  --font-sans: Inter, ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
+  --font-sans: "Inter Variable", Inter, ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
+  --font-serif: "Instrument Serif", ui-serif, Georgia, serif;
+  --font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
 }
 
 html,
 body {
-  background: var(--t-bg);
-  color: var(--t-text);
+  background: var(--t-canvas);
+  color: var(--t-ink);
   font-family: var(--font-sans);
+  font-feature-settings: "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
 }
 
 body {
   margin: 0;
   text-align: center;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+::selection {
+  background: var(--t-ring);
+}
+
+/* Component recipes live in the components layer so Tailwind utilities can still override them. */
+@layer components {
+/* Subtle dot grid that fades out toward the bottom. */
+.grid-bg {
+  position: relative;
+  isolation: isolate;
+}
+.grid-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(circle at center, var(--t-grid-dot) 1px, transparent 1.2px);
+  background-size: 16px 16px;
+  background-position: center top;
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, var(--t-ink) 0%, transparent 100%);
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, var(--t-ink) 0%, transparent 100%);
+  opacity: 0.55;
+}
+
+/* Etched panel. */
+.panel {
+  background: var(--t-panel);
+  border: 1px solid var(--t-hairline);
+  border-radius: 14px;
+  box-shadow:
+    inset 0 1px 0 0 var(--t-highlight),
+    0 1px 2px 0 var(--t-drop);
+}
+
+/* Inset well for inputs, code and stats. */
+.well {
+  background: var(--t-well);
+  border: 1px solid var(--t-hairline);
+  border-radius: 10px;
+}
+
+/* Catalog marking. */
+.label-mono {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--t-faint);
+}
+
+.wordmark {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 0.95;
+  color: var(--t-ink);
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+.rule {
+  height: 1px;
+  width: 100%;
+  background: var(--t-hairline);
+  box-shadow: 0 1px 0 0 var(--t-highlight);
+}
+
+/* Buttons. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 550;
+  letter-spacing: -0.005em;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  transition:
+    filter 120ms ease,
+    background-color 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease,
+    transform 60ms ease;
+}
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.btn-primary,
+.btn-secondary {
+  height: 40px;
+  padding: 0 18px;
+  border-radius: 10px;
+}
+.btn-primary {
+  background: var(--t-accent);
+  color: var(--t-on-accent);
+  border: 1px solid var(--t-accent);
+  box-shadow:
+    inset 0 1px 0 0 var(--t-btn-shine),
+    0 1px 2px 0 var(--t-drop);
+}
+.btn-primary:not(:disabled):hover {
+  filter: brightness(1.08);
+}
+.btn-secondary {
+  background: var(--t-panel);
+  color: var(--t-ink);
+  border: 1px solid var(--t-hairline-strong);
+  box-shadow:
+    inset 0 1px 0 0 var(--t-highlight),
+    0 1px 2px 0 var(--t-drop);
+}
+.btn-secondary:not(:disabled):hover {
+  background: var(--t-well);
+  border-color: var(--t-faint);
+}
+.btn-primary:not(:disabled):active,
+.btn-secondary:not(:disabled):active {
+  transform: translateY(1px);
+}
+.btn-text,
+.btn-danger {
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid transparent;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.btn-text {
+  color: var(--t-muted);
+}
+.btn-text:not(:disabled):hover {
+  color: var(--t-ink);
+  background: var(--t-well);
+}
+.btn-danger {
+  color: var(--t-danger);
+}
+.btn-danger:not(:disabled):hover {
+  background: var(--t-well);
+  border-color: var(--t-hairline);
+}
+
+/* Inputs. */
+.input {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 10px;
+  background: var(--t-well);
+  border: 1px solid var(--t-hairline);
+  color: var(--t-ink);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  text-align: center;
+  box-shadow: inset 0 1px 2px 0 var(--t-drop);
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+}
+.input::placeholder {
+  color: var(--t-faint);
+}
+.input:hover {
+  border-color: var(--t-hairline-strong);
+}
+.input:focus {
+  outline: none;
+  border-color: var(--t-accent);
+  box-shadow: 0 0 0 2px var(--t-ring);
+}
+.input-mono {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.02em;
 }
 
 button:focus-visible,
-input:focus-visible,
 a:focus-visible {
-  outline: 2px solid var(--t-accent);
-  outline-offset: 2px;
+  outline: none;
+  box-shadow: 0 0 0 2px var(--t-ring);
 }
+
+/* Status dot with a soft halo. */
+.dot {
+  display: inline-block;
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--dot);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--dot) 18%, transparent);
+}
+.dot-ok {
+  --dot: var(--t-ok);
+}
+.dot-warn {
+  --dot: var(--t-warn);
+}
+.dot-danger {
+  --dot: var(--t-danger);
+}
+.dot-muted {
+  --dot: var(--t-faint);
+}
+.dot-accent {
+  --dot: var(--t-accent);
+}
+.dot-pulse {
+  animation: dot-pulse 2.4s ease-in-out infinite;
+}
+@keyframes dot-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--dot) 18%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--dot) 6%, transparent);
+  }
+}
+
+/* Stat strip: big tabular numbers separated by vertical hairlines. */
+.stat-strip {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  width: 100%;
+  background: var(--t-well);
+  border: 1px solid var(--t-hairline);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 12px 6px 10px;
+}
+.stat + .stat {
+  border-left: 1px solid var(--t-hairline);
+}
+.stat-value {
+  font-family: var(--font-sans);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--t-ink);
+}
+
+/* Indeterminate progress bar. */
+.progress {
+  position: relative;
+  width: 100%;
+  height: 2px;
+  border-radius: 2px;
+  overflow: hidden;
+  background: var(--t-hairline);
+}
+.progress::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 35%;
+  border-radius: 2px;
+  background: var(--t-accent);
+  animation: progress-slide 1.4s cubic-bezier(0.45, 0, 0.2, 1) infinite;
+}
+.progress-paused::after {
+  animation: none;
+  left: 0;
+  width: 100%;
+  background: var(--t-warn);
+  opacity: 0.6;
+}
+@keyframes progress-slide {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(290%);
+  }
+}
+
+.countdown {
+  font-family: var(--font-mono);
+  font-size: 34px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  color: var(--t-warn);
+}
+
+.wrap-anywhere {
+  overflow-wrap: anywhere;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dot-pulse {
+    animation: none;
+  }
+  .progress::after {
+    animation: none;
+    left: 0;
+    width: 100%;
+    opacity: 0.6;
+  }
+  .btn {
+    transition: none;
+  }
+}
+} /* end components layer */

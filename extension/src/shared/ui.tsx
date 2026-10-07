@@ -2,34 +2,52 @@ import { useEffect, useState, type ButtonHTMLAttributes, type ReactNode } from "
 
 type Variant = "primary" | "secondary" | "text" | "danger";
 
-const variants: Record<Variant, string> = {
-  primary: "bg-accent text-on-accent hover:opacity-90 px-5 py-2.5 font-semibold",
-  secondary: "bg-raised text-fg border border-line hover:border-accent px-4 py-2 font-medium",
-  text: "text-accent hover:underline px-2 py-1 font-medium",
-  danger: "text-danger hover:underline px-2 py-1 font-medium",
-};
-
 export function Button({ variant = "primary", className = "", ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant }) {
-  return (
-    <button
-      type="button"
-      className={`rounded-lg text-sm transition disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer ${variants[variant]} ${className}`}
-      {...props}
-    />
-  );
+  return <button type="button" className={`btn btn-${variant} ${className}`} {...props} />;
 }
 
-export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
+/** Etched panel with an optional catalog eyebrow such as "01 / STATUS". */
+export function Card({ children, className = "", label }: { children: ReactNode; className?: string; label?: ReactNode }) {
   return (
-    <section className={`w-full rounded-xl border border-line bg-surface p-4 flex flex-col items-center gap-2 text-center ${className}`}>
+    <section className={`panel w-full p-4 flex flex-col items-center gap-2.5 text-center ${className}`}>
+      {label && <Label className="mb-0.5">{label}</Label>}
       {children}
     </section>
   );
 }
 
-export function Dot({ tone }: { tone: "ok" | "warn" | "danger" | "muted" }) {
-  const cls = { ok: "bg-ok", warn: "bg-warn", danger: "bg-danger", muted: "bg-muted" }[tone];
-  return <span aria-hidden className={`inline-block h-2.5 w-2.5 rounded-full ${cls}`} />;
+export function Label({ children, className = "" }: { children: ReactNode; className?: string }) {
+  return <p className={`label-mono ${className}`}>{children}</p>;
+}
+
+export function Dot({ tone, pulse }: { tone: "ok" | "warn" | "danger" | "muted" | "accent"; pulse?: boolean }) {
+  return <span aria-hidden className={`dot dot-${tone} ${pulse ? "dot-pulse" : ""}`} />;
+}
+
+export function StatStrip({ stats }: { stats: { label: string; value: ReactNode; tone?: "ok" | "danger" }[] }) {
+  return (
+    <div className="stat-strip">
+      {stats.map((s) => (
+        <div key={s.label} className="stat">
+          <span className={`stat-value ${s.tone === "ok" ? "text-ok" : s.tone === "danger" ? "text-danger" : ""}`}>{s.value}</span>
+          <span className="label-mono">{s.label}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function ProgressBar({ paused }: { paused?: boolean }) {
+  return <div className={`progress ${paused ? "progress-paused" : ""}`} role="progressbar" aria-busy={!paused} />;
+}
+
+/** Version from the built manifest, for the "SYNC / v0.1.0" marking. */
+export function extVersion(): string {
+  try {
+    return chrome.runtime.getManifest().version;
+  } catch {
+    return "";
+  }
 }
 
 /** Re-renders every `ms` so relative times and countdowns stay fresh. */

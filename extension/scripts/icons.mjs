@@ -1,8 +1,10 @@
-// Zero dependency PNG icon generator: accent rounded square with a "T".
+// Zero dependency PNG icon generator: etched canvas tile with an accent slab serif "T".
 import { deflateSync } from "node:zlib";
 
+const CANVAS = [0x0f, 0x11, 0x15];
+const PANEL = [0x1b, 0x1f, 0x27];
+const RING = [0x3a, 0x41, 0x4f];
 const ACCENT = [0x7c, 0x9c, 0xff];
-const GLYPH = [0x0f, 0x11, 0x15];
 
 const CRC_TABLE = (() => {
   const t = new Uint32Array(256);
@@ -28,38 +30,57 @@ function chunk(type, data) {
   return Buffer.concat([len, td, crc]);
 }
 
-/** Coverage (0..1) of the icon shape at pixel center (x, y) in a unit square. */
-function sample(u, v) {
-  const r = 0.2;
-  // Rounded square mask.
-  const cx = Math.min(Math.max(u, r), 1 - r);
-  const cy = Math.min(Math.max(v, r), 1 - r);
-  if ((u - cx) ** 2 + (v - cy) ** 2 > r * r) return { inside: false };
-  const bar = v >= 0.24 && v <= 0.37 && u >= 0.24 && u <= 0.76;
-  const stem = u >= 0.435 && u <= 0.565 && v >= 0.24 && v <= 0.78;
-  return { inside: true, glyph: bar || stem };
+
+const inBox = (u, v, u0, u1, v0, v1) => u >= u0 && u <= u1 && v >= v0 && v <= v1;
+
+/** Slab serif "T": crossbar with drooping end serifs, stem and a foot slab. */
+function glyph(u, v) {
+  return (
+    inBox(u, v, 0.21, 0.79, 0.22, 0.34) || // crossbar
+    inBox(u, v, 0.21, 0.31, 0.22, 0.43) || // left serif
+    inBox(u, v, 0.69, 0.79, 0.22, 0.43) || // right serif
+    inBox(u, v, 0.435, 0.565, 0.22, 0.78) || // stem
+    inBox(u, v, 0.33, 0.67, 0.7, 0.8) // foot
+  );
+}
+
+/**
+ * Color of the icon at (u, v) in a unit square, or null outside the tile.
+ * ringW is the hairline width in unit space so it stays about one pixel at small sizes.
+ */
+function sample(u, v, ringW) {
+  const r = 0.22;
+  const qx = Math.max(Math.abs(u - 0.5) - (0.5 - r), 0);
+  const qy = Math.max(Math.abs(v - 0.5) - (0.5 - r), 0);
+  const d = Math.hypot(qx, qy) - r; // signed distance to the rounded square edge
+  if (d > 0) return null;
+  if (glyph(u, v)) return ACCENT;
+  if (d > -ringW) return RING;
+  // Barely lifted panel toward the top, canvas below: a very subtle etched fill.
+  const t = Math.min(Math.max(v, 0), 1);
+  return CANVAS.map((c, i) => c + (PANEL[i] - c) * (1 - t));
 }
 
 export function iconPng(size) {
   const ss = 4; // supersampling for smooth edges
+  const ringW = Math.max(1 / size, 0.016);
   const raw = Buffer.alloc(size * (size * 4 + 1));
   for (let y = 0; y < size; y++) {
     raw[y * (size * 4 + 1)] = 0; // filter: none
     for (let x = 0; x < size; x++) {
       let a = 0;
-      let g = 0;
+      const rgb = [0, 0, 0];
       for (let sy = 0; sy < ss; sy++)
         for (let sx = 0; sx < ss; sx++) {
-          const s = sample((x + (sx + 0.5) / ss) / size, (y + (sy + 0.5) / ss) / size);
-          if (s.inside) {
+          const col = sample((x + (sx + 0.5) / ss) / size, (y + (sy + 0.5) / ss) / size, ringW);
+          if (col) {
             a++;
-            if (s.glyph) g++;
+            for (let c = 0; c < 3; c++) rgb[c] += col[c];
           }
         }
       const n = ss * ss;
-      const mix = a ? g / a : 0;
       const o = y * (size * 4 + 1) + 1 + x * 4;
-      for (let c = 0; c < 3; c++) raw[o + c] = Math.round(ACCENT[c] * (1 - mix) + GLYPH[c] * mix);
+      for (let c = 0; c < 3; c++) raw[o + c] = a ? Math.round(rgb[c] / a) : CANVAS[c];
       raw[o + 3] = Math.round((a / n) * 255);
     }
   }
